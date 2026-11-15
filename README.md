@@ -1,167 +1,217 @@
 # Ray360
 
-Perspective views and reversible prediction mapping for **already-stitched 360 images**.
+Geometry for computer vision on **stitched 360 images and video frames**.
 
-Ray360 extracts model inputs from equirectangular NumPy arrays and retains the
-geometry through crop, resize, and letterbox operations. Map points and predicted
-boxes back to the panorama, including objects crossing its seam or covering a pole.
+[![PyPI](https://img.shields.io/pypi/v/ray360)](https://pypi.org/project/ray360/)
+[![Python](https://img.shields.io/pypi/pyversions/ray360)](https://pypi.org/project/ray360/)
+[![Tests](https://github.com/aasmanbashyal/ray360/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/aasmanbashyal/ray360/actions/workflows/tests.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/aasmanbashyal/ray360/blob/main/LICENSE)
 
-Python 3.11+. NumPy is the only required dependency. Version 0.1.0 is the focused
-first-release API; the earlier development API has been removed.
+Extract perspective views or cube faces from an equirectangular panorama, prepare
+them for a model, and map its predictions back to the sphere. Ray360 retains the
+geometry through crop, resize, and letterbox operations, including objects that
+cross the panorama seam or cover a pole.
+
+Python 3.11+ · NumPy core · Optional Pillow image helpers · MIT license
+
+[Install](#install) · [Quick start](#quick-start) · [API reference](https://github.com/aasmanbashyal/ray360/blob/main/docs/api.md)
+· [Examples](#examples) · [Contribute](#contributing-and-support)
+
+![A stitched panorama with three colored view footprints and the corresponding perspective images](https://raw.githubusercontent.com/aasmanbashyal/ray360/main/docs/assets/perspective-views.webp)
+
+Actual Ray360 output from *Jordan Pond* by Matthew Petroff / Pannellum.
+[Image credits and reproduction](https://github.com/aasmanbashyal/ray360/blob/main/docs/assets/README.md).
+
+## Where Ray360 fits
+
+```text
+Stitched panorama or decoded video frame
+              │
+              ▼
+    Ray360: extract views → crop / resize / letterbox
+              │
+              ▼
+    Your application: run a model and collect predictions
+              │
+              ▼
+    Ray360: map points and boxes back to the panorama
+```
+
+| Task | Ray360 provides |
+| --- | --- |
+| Prepare model inputs | Perspective views, full-sphere view coverage, and preprocessing |
+| Convert projections | Equirectangular images ↔ six named cube faces |
+| Map predictions | Inverse point transforms and spherical regions from view-space boxes |
+| Render mapped objects | Seam-split polygons, approximate rectangles, and pixel membership masks |
+| Process repeated frames | Reusable coordinate maps with a bounded cache |
+| Save geometry | Versioned JSON-compatible transforms, regions, and provenance |
+
+Applications supply already-stitched pixels and own inference, video decoding,
+timestamps, tracking, and export formats. Ray360 does not stitch raw camera feeds
+or bundle a model. See the [scope](https://github.com/aasmanbashyal/ray360/blob/main/docs/scope.md).
 
 ## Install
 
-```bash
-uv add ray360                 # NumPy core
-uv add "ray360[image]"        # Optional Pillow image helpers
-```
-
-With pip, use `pip install ray360` or `pip install "ray360[image]"`.
-
-For development, clone [the repository](https://github.com/aasmanbashyal/ray360)
-and install from the checkout:
+Add Ray360 to a uv project:
 
 ```bash
-uv sync --locked                         # NumPy core
-uv sync --locked --extra image           # Optional Pillow image helpers
-uv sync --locked --group dev --extra image
+uv add ray360
+# Include image loading, saving, and overlays:
+uv add "ray360[image]"
 ```
 
-To test a local build in another environment, run `uv build --no-sources`,
-then use `uv pip install /path/to/ray360-0.1.0-py3-none-any.whl`.
+Or install with pip:
 
-## Extract a view and map a prediction
+```bash
+pip install ray360
+pip install "ray360[image]"  # Optional image helpers
+```
+
+The core depends only on NumPy. Model and decoder dependencies are installed
+separately by the application. See [PyPI](https://pypi.org/project/ray360/) and the
+[release history](https://github.com/aasmanbashyal/ray360/releases).
+
+## Quick start
+
+This example runs with the NumPy-only installation. Replace the synthetic array
+and example prediction with your stitched image and model output.
 
 ```python
 import numpy as np
 from ray360 import Box2D, Panorama, Perspective
 
-# Supplying Panorama explicitly declares that these pixels are already stitched.
-panorama = Panorama(np.zeros((1024, 2048, 3), dtype=np.uint8), source_id="capture")
-view = panorama.view(Perspective(960, 540, yaw=180, pitch=10, hfov=100))
-model_view = view.crop(40, 20, 880, 500).letterbox(640, 640)
+pixels = np.zeros((360, 720, 3), dtype=np.uint8)
+panorama = Panorama(pixels, source_id="capture")
 
-# Run any model in the application. Its predictions must use model_view pixels.
-boxes = [Box2D(250, 240, 390, 400, label="person", score=0.93, track_id=7)]
-regions = model_view.map_boxes(boxes)
-for region in regions:
-    polygons = region.polygons(panorama.projection)
-    rectangles = region.boxes(panorama.projection)
-    membership = region.rasterize(panorama.projection)
+# yaw=180 looks across the panorama seam.
+view = panorama.view(Perspective(320, 180, yaw=180, hfov=90))
+model_view = view.letterbox(320, 320)
 
-points, valid = model_view.transform.to_panorama([[320, 320], [10, 0]])
+# Run your model on model_view.image. Boxes use its pixel coordinates.
+predictions = [Box2D(90, 100, 230, 220, label="person", score=0.9)]
+region = model_view.map_boxes(predictions)[0]
+
+polygons = region.polygons(panorama.projection)
+mask = region.rasterize(panorama.projection)
+print(model_view.image.shape)  # (320, 320, 3)
+print(len(polygons))  # 2 pieces at the seam, still one object
+print(mask.shape)  # (360, 720)
 ```
 
-One `SphericalRegion` remains one object even when rendering produces two seam
-pieces. `region.box` retains labels, scores, tracking IDs, and attributes. Exported
-rectangles enclose sampled boundaries and are approximate. Use `rasterize()` for
-membership at pixel centers.
+`region.box` retains the label, score, tracking ID, and custom attributes. Crop and
+resize operations also preserve the transform. Map individual points with
+`model_view.transform.to_panorama(points)` and use its returned validity mask.
 
-Predictions entirely in preprocessing padding are discarded; partial boxes are
-clipped. Point mapping returns a validity mask. Ignore coordinates marked false.
-`model_view.valid` identifies retained pixels, including after a crop followed by
-new padding. These masks describe geometry, not detector confidence or occlusion.
+![An illustrative box on a letterboxed perspective view maps to two pieces at the left and right panorama edges](https://raw.githubusercontent.com/aasmanbashyal/ray360/main/docs/assets/seam-mapping.webp)
 
-## Arrays, sampling, and repeated frames
+The box above is a geometry demonstration, not a model detection. Its two
+panorama pieces belong to the same spherical region.
 
-HW and HWC arrays retain their dtype. Bilinear interpolation is the default for
-images. Use `interpolation="nearest"` for class labels; the choice carries through
-all subsequent view preprocessing unless explicitly overridden. Boolean and
-64-bit integer arrays require nearest sampling.
+### Convert cube faces
 
 ```python
-from ray360 import MapCache, coverage_views
+import numpy as np
+from ray360 import Equirectangular, Panorama, from_cubemap, to_cubemap
 
-cache = MapCache(max_bytes=64 * 1024 * 1024)
-targets = coverage_views(width=320, height=320)
-for view in panorama.views(targets, cache=cache):
-    pass  # Process and release each view instead of retaining all images.
+panorama = Panorama(np.zeros((360, 720, 3), dtype=np.uint8))
+faces = to_cubemap(panorama, size=256)
+restored = from_cubemap(faces, Equirectangular(720, 360))
+
+print(sorted(faces))  # ['back', 'down', 'front', 'left', 'right', 'up']
+print(restored.shape)  # (360, 720, 3)
 ```
 
-Reuse the cache and targets for subsequent panoramas with the same dimensions and
-orientation. The default shared cache holds at most 128 MiB of coordinate maps.
-Pass `cache=None` to disable caching. The budget covers cached maps, not caller
-images, returned views, or temporary allocations. Arrays remain caller-owned.
+Faces are square with a 90-degree field of view. Bilinear reconstruction samples
+neighboring faces at their boundaries. For model predictions on a cube face, use
+`panorama.view(cube_projections(size)["front"])` to retain its view transform.
+See [face orientation and conversion](https://github.com/aasmanbashyal/ray360/blob/main/docs/api.md#cubemap-conversion).
 
-`coverage_views()` defaults to 24 views covering the sphere. This does not
-guarantee detection recall. Choose view size, field of view, and overlap using the
-application's accuracy and latency measurements.
+![Six cube faces generated from the panorama, labeled front, right, back, left, up, and down](https://raw.githubusercontent.com/aasmanbashyal/ray360/main/docs/assets/cubemap-faces.webp)
 
-## Persistence and optional image helpers
+The faces are shown in a display grid; `to_cubemap()` returns a dictionary of arrays.
 
-`ViewTransform.to_dict()` and `.from_dict()` preserve the mapping without storing
-pixels. `view.provenance()` adds source ID, optional timestamp, and interpolation.
-`SphericalRegion.to_dict()` and `.from_dict()` preserve both a region's boundary
-definition and its intended interior. Both schemas carry a version. Keep custom
-annotation attributes JSON-compatible when writing them as JSON.
+### Read an image and draw mapped predictions
+
+With the `image` extra installed and a stitched image named `stitched.jpg`:
 
 ```python
+from ray360 import Box2D, Perspective
 from ray360.image import overlay, read_panorama, write_image
 
-panorama = read_panorama("stitched.jpg")  # Explicit declaration of stitched geometry
+panorama = read_panorama("stitched.jpg")
 view = panorama.view(Perspective(640, 360, yaw=180))
-regions = view.map_boxes([Box2D(240, 100, 400, 260)])
-write_image("mapped.png", overlay(panorama.image, regions, projection=panorama.projection))
+regions = view.map_boxes([Box2D(240, 100, 400, 260, label="example")])
+result = overlay(panorama.image, regions, projection=panorama.projection)
+write_image("mapped.png", result)
 ```
 
-Image loading returns uint8 RGB and preserves stored pixel orientation. Saving
-refuses existing files unless `overwrite=True` is supplied.
+Loading returns uint8 RGB without rotating the stored pixels. Saving refuses to
+overwrite an existing file unless `overwrite=True` is supplied.
 
-## Cubemap conversion
+## Video and repeated views
 
-```python
-from ray360 import Equirectangular, cube_projections, from_cubemap, to_cubemap
+Decode each video frame to a panorama array in your application. Reuse a
+`MapCache` and the same target projections across frames with matching dimensions
+and orientation. `panorama.views(targets, cache=cache)` yields views one at a time.
+The [PyAV example](https://github.com/aasmanbashyal/ray360/blob/main/examples/video_frames.py)
+shows the decoder boundary and timestamp handling.
 
-faces = to_cubemap(panorama, size=512)  # dict of six HW or HWC arrays
-restored = from_cubemap(faces, Equirectangular(2048, 1024))
+`coverage_views()` defaults to 24 views covering the sphere. Select view size,
+field of view, and overlap using your application's accuracy and latency needs.
+The default shared map cache is capped at 128 MiB; that limit covers cached maps,
+not source images, output arrays, or temporary allocations.
 
-# For predictions on cube faces, keep the ordinary View and its transform.
-front = panorama.view(cube_projections(512)["front"])
-regions = front.map_boxes([Box2D(200, 180, 300, 320)])
-```
+## Behavior to know
 
-Faces are named `front`, `right`, `back`, `left`, `up`, and `down`. Each is square
-with a 90-degree field of view. [The orientation table](https://github.com/aasmanbashyal/ray360/blob/main/docs/api.md#cubemap-conversion)
-defines the pole faces. Bilinear conversion back to a panorama samples adjacent
-faces at cube boundaries. Use `interpolation="nearest"` in both directions for
-label arrays. Conversion preserves dtype and can lose detail through resampling.
-Atlas layouts and raw-camera stitching remain application concerns.
+- Inputs are HW or HWC NumPy arrays. Arrays remain caller-owned, and sampling
+  preserves their dtype. Use nearest sampling for labels, booleans, and 64-bit integers.
+- Predictions wholly inside preprocessing padding are discarded; partial boxes
+  are clipped. Ignore point coordinates whose validity mask is false.
+- A spherical region remains one object even when it renders as two seam pieces.
+  Its exported rectangles are approximate. Use `rasterize()` for membership at pixel centers.
+- Projection conversion resamples pixels and may lose detail. Geometry tests do
+  not establish detector accuracy or camera calibration.
+- `ray360.experimental` contains sampled spherical IoU and NMS. Small objects may
+  receive zero sampled overlap. These functions are outside the supported root API.
 
-## Scope and experimental operations
+Ray360 is an early `0.x` library. API changes will be described in the
+[changelog](https://github.com/aasmanbashyal/ray360/blob/main/docs/changelog.md).
 
-The package owns projection geometry, cubemap conversion, preprocessing transforms,
-box/point mapping, and map caching. Applications own inference, video decoding, timestamps, dataset
-formats, and encoding. Raw-camera stitching, fisheye calibration, tensor backends,
-network streaming, and segmentation/pose annotation codecs are outside this release.
+## Examples
 
-`ray360.experimental` contains sampled spherical IoU and class-aware NMS. They
-are outside the stable root API. Small objects can miss every sample and receive
-zero overlap, even against themselves. NMS suppresses predictions; it does not
-fuse partial detections or establish detector accuracy. See [scope](https://github.com/aasmanbashyal/ray360/blob/main/docs/scope.md).
+| Example | What it demonstrates | Dependencies |
+| --- | --- | --- |
+| [basic.py](https://github.com/aasmanbashyal/ray360/blob/main/examples/basic.py) | A synthetic panorama, letterboxing, and a seam-crossing prediction | NumPy; Pillow for optional output |
+| [detect.py](https://github.com/aasmanbashyal/ray360/blob/main/examples/detect.py) | Application-owned YOLO inference and prediction mapping | Image extra and Ultralytics |
+| [video_frames.py](https://github.com/aasmanbashyal/ray360/blob/main/examples/video_frames.py) | Decoding stitched video frames and retaining timestamps | Image extra and PyAV |
+| [readme_gallery.py](https://github.com/aasmanbashyal/ray360/blob/main/examples/readme_gallery.py) | Reproducing the figures on this page | Image extra and the public panorama fixture |
 
-## Examples and development
+The [validation guide](https://github.com/aasmanbashyal/ray360/blob/main/docs/validation.md)
+includes setup commands and recorded real-image, cubemap, model, and video checks.
+The normal test suite never downloads media or weights. Integration fixtures are
+opt-in and checksum-verified.
 
-```bash
-uv run --no-sync python examples/basic.py
-uv run --no-sync python -m pytest
-uv run --no-sync ruff check src tests scripts examples benchmarks
-uv run --no-sync mypy
-uv build --no-sources
-uv run --no-sync python scripts/check_wheel.py
-```
+## Documentation
 
-[The basic example](https://github.com/aasmanbashyal/ray360/blob/main/examples/basic.py) needs only NumPy. It can write a synthetic
-overlay with `--output .test-results/demo.png` when Pillow is installed.
-[The model example](https://github.com/aasmanbashyal/ray360/blob/main/examples/detect.py) and [decoder example](https://github.com/aasmanbashyal/ray360/blob/main/examples/video_frames.py)
-show application-owned integrations with separately installed dependencies.
-The opt-in [end-to-end suite](https://github.com/aasmanbashyal/ray360/blob/main/docs/validation.md#real-media-and-model-validation)
-executes these examples and runs cube conversion and CPU detection on every frame
-of two real panorama video encodings. It also checks two stitched photos and
-photographic cube faces. Media and model weights are checksum-verified local fixtures.
+- [API reference](https://github.com/aasmanbashyal/ray360/blob/main/docs/api.md): coordinates, shapes, transforms, persistence, and rendering.
+- [Scope](https://github.com/aasmanbashyal/ray360/blob/main/docs/scope.md): supported use cases and criteria for new features.
+- [Validation](https://github.com/aasmanbashyal/ray360/blob/main/docs/validation.md) and [benchmarks](https://github.com/aasmanbashyal/ray360/blob/main/docs/benchmarks.md): what was tested and measured.
+- [Release guide](https://github.com/aasmanbashyal/ray360/blob/main/docs/releasing.md): maintainer publishing workflow.
 
-See [API conventions](https://github.com/aasmanbashyal/ray360/blob/main/docs/api.md), [validation](https://github.com/aasmanbashyal/ray360/blob/main/docs/validation.md), and
-[whole-panorama benchmarks](https://github.com/aasmanbashyal/ray360/blob/main/docs/benchmarks.md). The ordinary test suite never
-downloads media or model weights.
+## Contributing and support
 
-Maintainers can follow the [release guide](https://github.com/aasmanbashyal/ray360/blob/main/docs/releasing.md)
-to publish a version from a Git tag.
+Start a [discussion](https://github.com/aasmanbashyal/ray360/discussions) for usage
+questions, integration ideas, or feedback from a consuming project. Use the
+[issue forms](https://github.com/aasmanbashyal/ray360/issues/new/choose) for
+reproducible bugs and concrete feature proposals.
+
+The [contribution guide](https://github.com/aasmanbashyal/ray360/blob/main/CONTRIBUTING.md)
+covers local setup, tests, branch names, and the pull request process. Useful
+contributions include small geometry reproductions, clearer examples, and
+measurements on stitched media. Discuss new backends or annotation types before
+starting a large change.
+
+Report vulnerabilities through the
+[security policy](https://github.com/aasmanbashyal/ray360/blob/main/SECURITY.md).
+Ray360 is maintained by [Aasman Bashyal](https://github.com/aasmanbashyal) and
+distributed under the [MIT license](https://github.com/aasmanbashyal/ray360/blob/main/LICENSE).
