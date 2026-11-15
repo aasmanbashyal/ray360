@@ -1,0 +1,30 @@
+name: real media and model validation
+on: workflow_dispatch
+
+permissions:
+  contents: read
+
+jobs:
+  cpu:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9
+        with:
+          version: '0.10.9'
+          python-version: '3.12'
+      - run: uv sync --locked --group dev --extra image
+      - run: uv pip install torch==2.15.0 torchvision==0.29.2 --index https://download.pytorch.org/whl/cpu
+      - run: uv pip install av==19.0.2 ultralytics==8.4.213
+      - run: uv run --no-sync python scripts/fetch_test_data.py --include-e2e
+      - run: uv run --no-sync python -m pytest tests/test_end_to_end.py --e2e --e2e-output .test-results/e2e -v -s
+        env:
+          YOLO_CONFIG_DIR: .test-results/yolo
+          YOLO_OFFLINE: 'true'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cpu-validation-report
+          path: .test-results/e2e/report.json
+          include-hidden-files: true

@@ -1,0 +1,44 @@
+name: tests
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        include:
+          - {os: ubuntu-latest, python: '3.11'}
+          - {os: ubuntu-latest, python: '3.13'}
+          - {os: ubuntu-latest, python: '3.14'}
+          - {os: windows-latest, python: '3.12'}
+          - {os: macos-latest, python: '3.12'}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: '0.10.9'
+          python-version: ${{ matrix.python }}
+      - run: uv sync --locked --group dev --extra image
+      - run: uv run --no-sync ruff check src tests scripts examples benchmarks
+      - run: uv run --no-sync ruff format --check src tests scripts examples benchmarks
+      - run: uv run --no-sync mypy
+      - run: uv run --no-sync python -m pytest
+      - run: uv run --no-sync python examples/basic.py
+      - run: uv build --no-sources
+      - run: uv run --no-sync python scripts/check_wheel.py
+      - run: uv run --no-sync python scripts/check_wheel.py --image
+
+  minimum-dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9
+        with:
+          version: '0.10.9'
+          python-version: '3.11'
+      - run: uv sync --locked --group dev --extra image
+      - run: uv pip install 'numpy==1.24.0' 'Pillow==10.0.0'
+      - run: uv run --no-sync python -m pytest
