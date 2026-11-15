@@ -1,0 +1,37 @@
+name: Feature request
+description: Propose a capability for stitched 360 computer vision workflows.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Read docs/scope.md before proposing a new backend or annotation type.
+        Broad ideas and usage questions can start in Discussions.
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem in your application
+      description: Describe the consuming workflow and what the current API cannot do.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: A short API or input/output example helps. Explain why this belongs in Ray360.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Workarounds and tradeoffs
+      description: Note alternatives, dependencies, performance concerns, and how correctness could be checked.
+  - type: dropdown
+    id: involvement
+    attributes:
+      label: How you could help
+      options:
+        - I can provide a use case or reproduction
+        - I can help test a proposed change
+        - I would like to contribute an implementation
+        - I am sharing the idea only

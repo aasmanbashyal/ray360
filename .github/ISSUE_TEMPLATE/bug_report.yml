@@ -1,0 +1,42 @@
+name: Bug report
+description: Report incorrect behavior with a reproducible example.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For usage help, use Discussions. Report vulnerabilities privately through SECURITY.md.
+        A small synthetic array is preferable to private media or model weights.
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Expected and actual behavior
+      description: What did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Include runnable code, input shape and dtype, projection settings, and any preprocessing.
+      render: python
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include Ray360, Python, NumPy, OS, and any relevant optional dependency versions.
+      placeholder: |
+        Ray360:
+        Python:
+        NumPy:
+        OS:
+        Pillow / decoder / model dependency, if relevant:
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Error output or additional evidence
+      description: Include the traceback or an explanation of the geometric error. Remove credentials and private paths.

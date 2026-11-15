@@ -5,6 +5,9 @@ Releases use `uv` and PyPI trusted publishing from
 
 ## First-time PyPI setup
 
+The Ray360 publisher is already configured. This section records the setup for
+maintainer reference; do not add a duplicate pending publisher for an existing project.
+
 Create a PyPI account, verify its email, and enable two-factor authentication.
 In [account publishing settings](https://pypi.org/manage/account/publishing/),
 add a pending GitHub publisher with these values:
@@ -23,14 +26,16 @@ that registered the pending publisher. See the
 
 ## Release steps
 
-1. Update the version in `pyproject.toml` and `src/ray360/__init__.py`, then run
-   `uv lock`. Keep the existing `0.1.0` for the first release.
+1. Choose a new version, update it in `pyproject.toml` and `src/ray360/__init__.py`,
+   then run `uv lock`. Move the relevant Unreleased entries in [the changelog](changelog.md)
+   under that version. Version `0.1.0` has already been published and must not be reused.
 2. Commit the release changes, push `main`, and wait for the tests workflow.
-3. Create and push an annotated tag matching the package version:
+3. Create and push an annotated tag matching the package version. For example,
+   after preparing version `0.1.1`:
 
    ```bash
-   git tag -a v0.1.0 -m "Ray360 0.1.0"
-   git push origin v0.1.0
+   git tag -a v0.1.1 -m "Ray360 0.1.1"
+   git push origin v0.1.1
    ```
 
 4. The publishing workflow checks the version, runs tests, builds the sdist and
@@ -39,8 +44,18 @@ that registered the pending publisher. See the
 5. Verify installation from the index outside the source checkout:
 
    ```bash
-   uv run --no-project --with "ray360[image]==0.1.0" --refresh-package ray360 python -I -c "import ray360; print(ray360.__version__)"
+   uv run --no-project --with "ray360[image]==0.1.1" --refresh-package ray360 python -I -c "import ray360; print(ray360.__version__)"
    ```
+
+6. Create a GitHub release for that existing tag, summarizing changes, installation,
+   and any migration notes. Attach the exact distributions from the successful
+   publish workflow or PyPI, with their SHA-256 checksums. Do not rebuild the
+   same version to populate GitHub release assets.
+
+README changes on GitHub appear immediately after merging. PyPI retains the
+README packaged with each release; a newer README reaches PyPI with the next
+version. A GitHub release does not create a GitHub Packages entry. Python
+distributions are hosted on PyPI.
 
 If an upload is interrupted, rerun the failed workflow. For an unchanged build,
 `uv publish` skips identical files that already exist. Published files cannot be
