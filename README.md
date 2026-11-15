@@ -30,3 +30,17 @@ own model inference, video decoding, and dataset formats. Experimental sampled
 spherical IoU and NMS are available under `ray360.experimental`.
 
 The source is distributed under the MIT license.
+
+## Cubemap conversion
+
+```python
+from ray360 import Equirectangular, cube_projections, from_cubemap, to_cubemap
+
+faces = to_cubemap(panorama, size=512)
+restored = from_cubemap(faces, Equirectangular(2048, 1024))
+front = panorama.view(cube_projections(512)["front"])
+```
+
+Faces are named front, right, back, left, up, and down. All faces have 90-degree
+fields of view and zero roll. Bilinear conversion samples adjacent faces at shared
+edges. Use nearest interpolation in both directions for label arrays.

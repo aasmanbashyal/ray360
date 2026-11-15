@@ -20,6 +20,9 @@ def test_public_package_contract():
         "View",
         "ViewTransform",
         "coverage_views",
+        "cube_projections",
+        "from_cubemap",
+        "to_cubemap",
     }
     root = Path(__file__).resolve().parents[1]
     config = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
