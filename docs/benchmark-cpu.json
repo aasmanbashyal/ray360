@@ -1,0 +1,32 @@
+{
+  "python": "3.12.13",
+  "numpy": "2.5.4",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "cpu_count": 16,
+  "source_size": [
+    4096,
+    2048
+  ],
+  "view_size": [
+    320,
+    320
+  ],
+  "coverage_view_count": 24,
+  "iterations": 5,
+  "map_build": {
+    "p50_ms": 31.374899961519986,
+    "p95_ms": 33.37980002397671
+  },
+  "cached_single_view": {
+    "p50_ms": 29.38760002143681,
+    "p95_ms": 30.774140020366758
+  },
+  "full_panorama_geometry": {
+    "p50_ms": 1851.613599981647,
+    "p95_ms": 1950.0134600093588
+  },
+  "cache_bytes": 23040000,
+  "cache_budget_bytes": 134217728,
+  "process_peak_rss_bytes": 100208640,
+  "scope": "Already-decoded pixels; all coverage views, letterboxing, one point and box mapping per view, polygon rendering. Excludes decoding, inference, NMS and file output."
+}

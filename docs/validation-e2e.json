@@ -1,0 +1,2010 @@
+{
+  "python": "3.12.13",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "packages": {
+    "ray360": "0.1.0",
+    "numpy": "2.5.4",
+    "Pillow": "13.0.0",
+    "av": "19.0.2",
+    "ultralytics": "8.4.213",
+    "torch": "2.15.0+cpu",
+    "torchvision": "0.29.2+cpu"
+  },
+  "device": "cpu",
+  "workflows": {
+    "pannellum-panorama": {
+      "source_size": [
+        4096,
+        2048
+      ],
+      "cube_size": 512,
+      "roundtrip_size": [
+        1024,
+        512
+      ],
+      "roundtrip_psnr_db": 29.791180680908997,
+      "view_count": 34,
+      "detections": 1,
+      "labels": [
+        "person"
+      ],
+      "elapsed_seconds": 11.104311699979007
+    },
+    "ricoh-theta-panorama": {
+      "source_size": [
+        2048,
+        1024
+      ],
+      "cube_size": 512,
+      "roundtrip_size": [
+        1024,
+        512
+      ],
+      "roundtrip_psnr_db": 42.83486258220129,
+      "view_count": 34,
+      "detections": 42,
+      "labels": [
+        "bird",
+        "bottle",
+        "chair",
+        "cup",
+        "dining table",
+        "keyboard",
+        "laptop",
+        "person",
+        "skis",
+        "traffic light",
+        "umbrella"
+      ],
+      "elapsed_seconds": 6.202173599973321
+    },
+    "photographic-cube": {
+      "input_face_size": 1584,
+      "panorama_size": [
+        2048,
+        1024
+      ],
+      "recovered_face_size": 256,
+      "face_psnr_db": {
+        "front": 29.909585651665658,
+        "right": 30.906188532308903,
+        "back": 32.4435847535439,
+        "left": 30.108974667391482,
+        "up": 56.67396232545273,
+        "down": 25.45711807147726
+      },
+      "independent_panorama_psnr_db": 28.78345998025751
+    },
+    "threejs-pano-mp4": {
+      "frames": [
+        {
+          "index": 0,
+          "timestamp": 0.0,
+          "detections": 3
+        },
+        {
+          "index": 1,
+          "timestamp": 0.04,
+          "detections": 1
+        },
+        {
+          "index": 2,
+          "timestamp": 0.08,
+          "detections": 1
+        },
+        {
+          "index": 3,
+          "timestamp": 0.12,
+          "detections": 2
+        },
+        {
+          "index": 4,
+          "timestamp": 0.16,
+          "detections": 2
+        },
+        {
+          "index": 5,
+          "timestamp": 0.2,
+          "detections": 4
+        },
+        {
+          "index": 6,
+          "timestamp": 0.24,
+          "detections": 3
+        },
+        {
+          "index": 7,
+          "timestamp": 0.28,
+          "detections": 4
+        },
+        {
+          "index": 8,
+          "timestamp": 0.32,
+          "detections": 4
+        },
+        {
+          "index": 9,
+          "timestamp": 0.36,
+          "detections": 4
+        },
+        {
+          "index": 10,
+          "timestamp": 0.4,
+          "detections": 4
+        },
+        {
+          "index": 11,
+          "timestamp": 0.44,
+          "detections": 3
+        },
+        {
+          "index": 12,
+          "timestamp": 0.48,
+          "detections": 4
+        },
+        {
+          "index": 13,
+          "timestamp": 0.52,
+          "detections": 2
+        },
+        {
+          "index": 14,
+          "timestamp": 0.56,
+          "detections": 2
+        },
+        {
+          "index": 15,
+          "timestamp": 0.6,
+          "detections": 4
+        },
+        {
+          "index": 16,
+          "timestamp": 0.64,
+          "detections": 4
+        },
+        {
+          "index": 17,
+          "timestamp": 0.68,
+          "detections": 5
+        },
+        {
+          "index": 18,
+          "timestamp": 0.72,
+          "detections": 5
+        },
+        {
+          "index": 19,
+          "timestamp": 0.76,
+          "detections": 3
+        },
+        {
+          "index": 20,
+          "timestamp": 0.8,
+          "detections": 5
+        },
+        {
+          "index": 21,
+          "timestamp": 0.84,
+          "detections": 5
+        },
+        {
+          "index": 22,
+          "timestamp": 0.88,
+          "detections": 4
+        },
+        {
+          "index": 23,
+          "timestamp": 0.92,
+          "detections": 5
+        },
+        {
+          "index": 24,
+          "timestamp": 0.96,
+          "detections": 6
+        },
+        {
+          "index": 25,
+          "timestamp": 1.0,
+          "detections": 6
+        },
+        {
+          "index": 26,
+          "timestamp": 1.04,
+          "detections": 3
+        },
+        {
+          "index": 27,
+          "timestamp": 1.08,
+          "detections": 5
+        },
+        {
+          "index": 28,
+          "timestamp": 1.12,
+          "detections": 2
+        },
+        {
+          "index": 29,
+          "timestamp": 1.16,
+          "detections": 5
+        },
+        {
+          "index": 30,
+          "timestamp": 1.2,
+          "detections": 4
+        },
+        {
+          "index": 31,
+          "timestamp": 1.24,
+          "detections": 4
+        },
+        {
+          "index": 32,
+          "timestamp": 1.28,
+          "detections": 7
+        },
+        {
+          "index": 33,
+          "timestamp": 1.32,
+          "detections": 6
+        },
+        {
+          "index": 34,
+          "timestamp": 1.36,
+          "detections": 4
+        },
+        {
+          "index": 35,
+          "timestamp": 1.4,
+          "detections": 5
+        },
+        {
+          "index": 36,
+          "timestamp": 1.44,
+          "detections": 6
+        },
+        {
+          "index": 37,
+          "timestamp": 1.48,
+          "detections": 6
+        },
+        {
+          "index": 38,
+          "timestamp": 1.52,
+          "detections": 6
+        },
+        {
+          "index": 39,
+          "timestamp": 1.56,
+          "detections": 5
+        },
+        {
+          "index": 40,
+          "timestamp": 1.6,
+          "detections": 5
+        },
+        {
+          "index": 41,
+          "timestamp": 1.64,
+          "detections": 6
+        },
+        {
+          "index": 42,
+          "timestamp": 1.68,
+          "detections": 6
+        },
+        {
+          "index": 43,
+          "timestamp": 1.72,
+          "detections": 6
+        },
+        {
+          "index": 44,
+          "timestamp": 1.76,
+          "detections": 3
+        },
+        {
+          "index": 45,
+          "timestamp": 1.8,
+          "detections": 4
+        },
+        {
+          "index": 46,
+          "timestamp": 1.84,
+          "detections": 3
+        },
+        {
+          "index": 47,
+          "timestamp": 1.88,
+          "detections": 5
+        },
+        {
+          "index": 48,
+          "timestamp": 1.92,
+          "detections": 4
+        },
+        {
+          "index": 49,
+          "timestamp": 1.96,
+          "detections": 3
+        },
+        {
+          "index": 50,
+          "timestamp": 2.0,
+          "detections": 4
+        },
+        {
+          "index": 51,
+          "timestamp": 2.04,
+          "detections": 5
+        },
+        {
+          "index": 52,
+          "timestamp": 2.08,
+          "detections": 5
+        },
+        {
+          "index": 53,
+          "timestamp": 2.12,
+          "detections": 4
+        },
+        {
+          "index": 54,
+          "timestamp": 2.16,
+          "detections": 4
+        },
+        {
+          "index": 55,
+          "timestamp": 2.2,
+          "detections": 4
+        },
+        {
+          "index": 56,
+          "timestamp": 2.24,
+          "detections": 6
+        },
+        {
+          "index": 57,
+          "timestamp": 2.28,
+          "detections": 6
+        },
+        {
+          "index": 58,
+          "timestamp": 2.32,
+          "detections": 6
+        },
+        {
+          "index": 59,
+          "timestamp": 2.36,
+          "detections": 3
+        },
+        {
+          "index": 60,
+          "timestamp": 2.4,
+          "detections": 5
+        },
+        {
+          "index": 61,
+          "timestamp": 2.44,
+          "detections": 5
+        },
+        {
+          "index": 62,
+          "timestamp": 2.48,
+          "detections": 6
+        },
+        {
+          "index": 63,
+          "timestamp": 2.52,
+          "detections": 5
+        },
+        {
+          "index": 64,
+          "timestamp": 2.56,
+          "detections": 5
+        },
+        {
+          "index": 65,
+          "timestamp": 2.6,
+          "detections": 4
+        },
+        {
+          "index": 66,
+          "timestamp": 2.64,
+          "detections": 5
+        },
+        {
+          "index": 67,
+          "timestamp": 2.68,
+          "detections": 4
+        },
+        {
+          "index": 68,
+          "timestamp": 2.72,
+          "detections": 4
+        },
+        {
+          "index": 69,
+          "timestamp": 2.76,
+          "detections": 2
+        },
+        {
+          "index": 70,
+          "timestamp": 2.8,
+          "detections": 4
+        },
+        {
+          "index": 71,
+          "timestamp": 2.84,
+          "detections": 4
+        },
+        {
+          "index": 72,
+          "timestamp": 2.88,
+          "detections": 4
+        },
+        {
+          "index": 73,
+          "timestamp": 2.92,
+          "detections": 6
+        },
+        {
+          "index": 74,
+          "timestamp": 2.96,
+          "detections": 5
+        },
+        {
+          "index": 75,
+          "timestamp": 3.0,
+          "detections": 5
+        },
+        {
+          "index": 76,
+          "timestamp": 3.04,
+          "detections": 7
+        },
+        {
+          "index": 77,
+          "timestamp": 3.08,
+          "detections": 6
+        },
+        {
+          "index": 78,
+          "timestamp": 3.12,
+          "detections": 2
+        },
+        {
+          "index": 79,
+          "timestamp": 3.16,
+          "detections": 4
+        },
+        {
+          "index": 80,
+          "timestamp": 3.2,
+          "detections": 3
+        },
+        {
+          "index": 81,
+          "timestamp": 3.24,
+          "detections": 4
+        },
+        {
+          "index": 82,
+          "timestamp": 3.28,
+          "detections": 4
+        },
+        {
+          "index": 83,
+          "timestamp": 3.32,
+          "detections": 3
+        },
+        {
+          "index": 84,
+          "timestamp": 3.36,
+          "detections": 3
+        },
+        {
+          "index": 85,
+          "timestamp": 3.4,
+          "detections": 2
+        },
+        {
+          "index": 86,
+          "timestamp": 3.44,
+          "detections": 4
+        },
+        {
+          "index": 87,
+          "timestamp": 3.48,
+          "detections": 3
+        },
+        {
+          "index": 88,
+          "timestamp": 3.52,
+          "detections": 2
+        },
+        {
+          "index": 89,
+          "timestamp": 3.56,
+          "detections": 3
+        },
+        {
+          "index": 90,
+          "timestamp": 3.6,
+          "detections": 3
+        },
+        {
+          "index": 91,
+          "timestamp": 3.64,
+          "detections": 3
+        },
+        {
+          "index": 92,
+          "timestamp": 3.68,
+          "detections": 2
+        },
+        {
+          "index": 93,
+          "timestamp": 3.72,
+          "detections": 3
+        },
+        {
+          "index": 94,
+          "timestamp": 3.76,
+          "detections": 3
+        },
+        {
+          "index": 95,
+          "timestamp": 3.8,
+          "detections": 5
+        },
+        {
+          "index": 96,
+          "timestamp": 3.84,
+          "detections": 3
+        },
+        {
+          "index": 97,
+          "timestamp": 3.88,
+          "detections": 2
+        },
+        {
+          "index": 98,
+          "timestamp": 3.92,
+          "detections": 4
+        },
+        {
+          "index": 99,
+          "timestamp": 3.96,
+          "detections": 3
+        },
+        {
+          "index": 100,
+          "timestamp": 4.0,
+          "detections": 5
+        },
+        {
+          "index": 101,
+          "timestamp": 4.04,
+          "detections": 5
+        },
+        {
+          "index": 102,
+          "timestamp": 4.08,
+          "detections": 3
+        },
+        {
+          "index": 103,
+          "timestamp": 4.12,
+          "detections": 3
+        },
+        {
+          "index": 104,
+          "timestamp": 4.16,
+          "detections": 1
+        },
+        {
+          "index": 105,
+          "timestamp": 4.2,
+          "detections": 3
+        },
+        {
+          "index": 106,
+          "timestamp": 4.24,
+          "detections": 3
+        },
+        {
+          "index": 107,
+          "timestamp": 4.28,
+          "detections": 2
+        },
+        {
+          "index": 108,
+          "timestamp": 4.32,
+          "detections": 2
+        },
+        {
+          "index": 109,
+          "timestamp": 4.36,
+          "detections": 3
+        },
+        {
+          "index": 110,
+          "timestamp": 4.4,
+          "detections": 0
+        },
+        {
+          "index": 111,
+          "timestamp": 4.44,
+          "detections": 2
+        },
+        {
+          "index": 112,
+          "timestamp": 4.48,
+          "detections": 4
+        },
+        {
+          "index": 113,
+          "timestamp": 4.52,
+          "detections": 3
+        },
+        {
+          "index": 114,
+          "timestamp": 4.56,
+          "detections": 1
+        },
+        {
+          "index": 115,
+          "timestamp": 4.6,
+          "detections": 1
+        },
+        {
+          "index": 116,
+          "timestamp": 4.64,
+          "detections": 2
+        },
+        {
+          "index": 117,
+          "timestamp": 4.68,
+          "detections": 2
+        },
+        {
+          "index": 118,
+          "timestamp": 4.72,
+          "detections": 4
+        },
+        {
+          "index": 119,
+          "timestamp": 4.76,
+          "detections": 4
+        },
+        {
+          "index": 120,
+          "timestamp": 4.8,
+          "detections": 6
+        },
+        {
+          "index": 121,
+          "timestamp": 4.84,
+          "detections": 4
+        },
+        {
+          "index": 122,
+          "timestamp": 4.88,
+          "detections": 4
+        },
+        {
+          "index": 123,
+          "timestamp": 4.92,
+          "detections": 3
+        },
+        {
+          "index": 124,
+          "timestamp": 4.96,
+          "detections": 5
+        },
+        {
+          "index": 125,
+          "timestamp": 5.0,
+          "detections": 2
+        },
+        {
+          "index": 126,
+          "timestamp": 5.04,
+          "detections": 1
+        },
+        {
+          "index": 127,
+          "timestamp": 5.08,
+          "detections": 1
+        },
+        {
+          "index": 128,
+          "timestamp": 5.12,
+          "detections": 4
+        },
+        {
+          "index": 129,
+          "timestamp": 5.16,
+          "detections": 0
+        },
+        {
+          "index": 130,
+          "timestamp": 5.2,
+          "detections": 2
+        },
+        {
+          "index": 131,
+          "timestamp": 5.24,
+          "detections": 3
+        },
+        {
+          "index": 132,
+          "timestamp": 5.28,
+          "detections": 1
+        },
+        {
+          "index": 133,
+          "timestamp": 5.32,
+          "detections": 3
+        },
+        {
+          "index": 134,
+          "timestamp": 5.36,
+          "detections": 4
+        },
+        {
+          "index": 135,
+          "timestamp": 5.4,
+          "detections": 4
+        },
+        {
+          "index": 136,
+          "timestamp": 5.44,
+          "detections": 3
+        },
+        {
+          "index": 137,
+          "timestamp": 5.48,
+          "detections": 4
+        },
+        {
+          "index": 138,
+          "timestamp": 5.52,
+          "detections": 2
+        },
+        {
+          "index": 139,
+          "timestamp": 5.56,
+          "detections": 2
+        },
+        {
+          "index": 140,
+          "timestamp": 5.6,
+          "detections": 2
+        },
+        {
+          "index": 141,
+          "timestamp": 5.64,
+          "detections": 2
+        },
+        {
+          "index": 142,
+          "timestamp": 5.68,
+          "detections": 3
+        },
+        {
+          "index": 143,
+          "timestamp": 5.72,
+          "detections": 4
+        },
+        {
+          "index": 144,
+          "timestamp": 5.76,
+          "detections": 1
+        },
+        {
+          "index": 145,
+          "timestamp": 5.8,
+          "detections": 2
+        },
+        {
+          "index": 146,
+          "timestamp": 5.84,
+          "detections": 3
+        },
+        {
+          "index": 147,
+          "timestamp": 5.88,
+          "detections": 3
+        },
+        {
+          "index": 148,
+          "timestamp": 5.92,
+          "detections": 2
+        },
+        {
+          "index": 149,
+          "timestamp": 5.96,
+          "detections": 2
+        },
+        {
+          "index": 150,
+          "timestamp": 6.0,
+          "detections": 1
+        },
+        {
+          "index": 151,
+          "timestamp": 6.04,
+          "detections": 2
+        },
+        {
+          "index": 152,
+          "timestamp": 6.08,
+          "detections": 2
+        },
+        {
+          "index": 153,
+          "timestamp": 6.12,
+          "detections": 2
+        },
+        {
+          "index": 154,
+          "timestamp": 6.16,
+          "detections": 1
+        },
+        {
+          "index": 155,
+          "timestamp": 6.2,
+          "detections": 2
+        },
+        {
+          "index": 156,
+          "timestamp": 6.24,
+          "detections": 2
+        },
+        {
+          "index": 157,
+          "timestamp": 6.28,
+          "detections": 2
+        },
+        {
+          "index": 158,
+          "timestamp": 6.32,
+          "detections": 1
+        },
+        {
+          "index": 159,
+          "timestamp": 6.36,
+          "detections": 5
+        },
+        {
+          "index": 160,
+          "timestamp": 6.4,
+          "detections": 4
+        },
+        {
+          "index": 161,
+          "timestamp": 6.44,
+          "detections": 4
+        },
+        {
+          "index": 162,
+          "timestamp": 6.48,
+          "detections": 2
+        },
+        {
+          "index": 163,
+          "timestamp": 6.52,
+          "detections": 3
+        },
+        {
+          "index": 164,
+          "timestamp": 6.56,
+          "detections": 5
+        },
+        {
+          "index": 165,
+          "timestamp": 6.6,
+          "detections": 2
+        },
+        {
+          "index": 166,
+          "timestamp": 6.64,
+          "detections": 3
+        },
+        {
+          "index": 167,
+          "timestamp": 6.68,
+          "detections": 3
+        },
+        {
+          "index": 168,
+          "timestamp": 6.72,
+          "detections": 2
+        },
+        {
+          "index": 169,
+          "timestamp": 6.76,
+          "detections": 4
+        },
+        {
+          "index": 170,
+          "timestamp": 6.8,
+          "detections": 3
+        },
+        {
+          "index": 171,
+          "timestamp": 6.84,
+          "detections": 2
+        },
+        {
+          "index": 172,
+          "timestamp": 6.88,
+          "detections": 4
+        },
+        {
+          "index": 173,
+          "timestamp": 6.92,
+          "detections": 1
+        },
+        {
+          "index": 174,
+          "timestamp": 6.96,
+          "detections": 1
+        },
+        {
+          "index": 175,
+          "timestamp": 7.0,
+          "detections": 2
+        },
+        {
+          "index": 176,
+          "timestamp": 7.04,
+          "detections": 2
+        },
+        {
+          "index": 177,
+          "timestamp": 7.08,
+          "detections": 3
+        },
+        {
+          "index": 178,
+          "timestamp": 7.12,
+          "detections": 5
+        },
+        {
+          "index": 179,
+          "timestamp": 7.16,
+          "detections": 6
+        },
+        {
+          "index": 180,
+          "timestamp": 7.2,
+          "detections": 5
+        },
+        {
+          "index": 181,
+          "timestamp": 7.24,
+          "detections": 5
+        },
+        {
+          "index": 182,
+          "timestamp": 7.28,
+          "detections": 5
+        },
+        {
+          "index": 183,
+          "timestamp": 7.32,
+          "detections": 6
+        },
+        {
+          "index": 184,
+          "timestamp": 7.36,
+          "detections": 5
+        },
+        {
+          "index": 185,
+          "timestamp": 7.4,
+          "detections": 7
+        },
+        {
+          "index": 186,
+          "timestamp": 7.44,
+          "detections": 5
+        },
+        {
+          "index": 187,
+          "timestamp": 7.48,
+          "detections": 5
+        }
+      ],
+      "model_view_count": 6,
+      "model_input_size": 320,
+      "total_model_views": 1128,
+      "detections": 668,
+      "cache_bytes": 5750784,
+      "elapsed_seconds": 114.83725370001048
+    },
+    "threejs-pano-webm": {
+      "frames": [
+        {
+          "index": 0,
+          "timestamp": 0.04,
+          "detections": 5
+        },
+        {
+          "index": 1,
+          "timestamp": 0.08,
+          "detections": 3
+        },
+        {
+          "index": 2,
+          "timestamp": 0.12,
+          "detections": 2
+        },
+        {
+          "index": 3,
+          "timestamp": 0.16,
+          "detections": 3
+        },
+        {
+          "index": 4,
+          "timestamp": 0.2,
+          "detections": 3
+        },
+        {
+          "index": 5,
+          "timestamp": 0.24,
+          "detections": 3
+        },
+        {
+          "index": 6,
+          "timestamp": 0.28,
+          "detections": 4
+        },
+        {
+          "index": 7,
+          "timestamp": 0.32,
+          "detections": 3
+        },
+        {
+          "index": 8,
+          "timestamp": 0.36,
+          "detections": 5
+        },
+        {
+          "index": 9,
+          "timestamp": 0.4,
+          "detections": 3
+        },
+        {
+          "index": 10,
+          "timestamp": 0.44,
+          "detections": 4
+        },
+        {
+          "index": 11,
+          "timestamp": 0.48,
+          "detections": 4
+        },
+        {
+          "index": 12,
+          "timestamp": 0.52,
+          "detections": 4
+        },
+        {
+          "index": 13,
+          "timestamp": 0.56,
+          "detections": 4
+        },
+        {
+          "index": 14,
+          "timestamp": 0.6,
+          "detections": 5
+        },
+        {
+          "index": 15,
+          "timestamp": 0.64,
+          "detections": 4
+        },
+        {
+          "index": 16,
+          "timestamp": 0.68,
+          "detections": 6
+        },
+        {
+          "index": 17,
+          "timestamp": 0.72,
+          "detections": 5
+        },
+        {
+          "index": 18,
+          "timestamp": 0.76,
+          "detections": 8
+        },
+        {
+          "index": 19,
+          "timestamp": 0.8,
+          "detections": 6
+        },
+        {
+          "index": 20,
+          "timestamp": 0.84,
+          "detections": 7
+        },
+        {
+          "index": 21,
+          "timestamp": 0.88,
+          "detections": 5
+        },
+        {
+          "index": 22,
+          "timestamp": 0.92,
+          "detections": 4
+        },
+        {
+          "index": 23,
+          "timestamp": 0.96,
+          "detections": 5
+        },
+        {
+          "index": 24,
+          "timestamp": 1.0,
+          "detections": 6
+        },
+        {
+          "index": 25,
+          "timestamp": 1.04,
+          "detections": 4
+        },
+        {
+          "index": 26,
+          "timestamp": 1.08,
+          "detections": 5
+        },
+        {
+          "index": 27,
+          "timestamp": 1.12,
+          "detections": 8
+        },
+        {
+          "index": 28,
+          "timestamp": 1.16,
+          "detections": 4
+        },
+        {
+          "index": 29,
+          "timestamp": 1.2,
+          "detections": 3
+        },
+        {
+          "index": 30,
+          "timestamp": 1.24,
+          "detections": 4
+        },
+        {
+          "index": 31,
+          "timestamp": 1.28,
+          "detections": 4
+        },
+        {
+          "index": 32,
+          "timestamp": 1.32,
+          "detections": 4
+        },
+        {
+          "index": 33,
+          "timestamp": 1.36,
+          "detections": 5
+        },
+        {
+          "index": 34,
+          "timestamp": 1.4,
+          "detections": 4
+        },
+        {
+          "index": 35,
+          "timestamp": 1.44,
+          "detections": 7
+        },
+        {
+          "index": 36,
+          "timestamp": 1.48,
+          "detections": 5
+        },
+        {
+          "index": 37,
+          "timestamp": 1.52,
+          "detections": 5
+        },
+        {
+          "index": 38,
+          "timestamp": 1.56,
+          "detections": 5
+        },
+        {
+          "index": 39,
+          "timestamp": 1.6,
+          "detections": 6
+        },
+        {
+          "index": 40,
+          "timestamp": 1.64,
+          "detections": 7
+        },
+        {
+          "index": 41,
+          "timestamp": 1.68,
+          "detections": 5
+        },
+        {
+          "index": 42,
+          "timestamp": 1.72,
+          "detections": 5
+        },
+        {
+          "index": 43,
+          "timestamp": 1.76,
+          "detections": 5
+        },
+        {
+          "index": 44,
+          "timestamp": 1.8,
+          "detections": 5
+        },
+        {
+          "index": 45,
+          "timestamp": 1.84,
+          "detections": 3
+        },
+        {
+          "index": 46,
+          "timestamp": 1.88,
+          "detections": 4
+        },
+        {
+          "index": 47,
+          "timestamp": 1.92,
+          "detections": 3
+        },
+        {
+          "index": 48,
+          "timestamp": 1.96,
+          "detections": 2
+        },
+        {
+          "index": 49,
+          "timestamp": 2.0,
+          "detections": 2
+        },
+        {
+          "index": 50,
+          "timestamp": 2.04,
+          "detections": 3
+        },
+        {
+          "index": 51,
+          "timestamp": 2.08,
+          "detections": 3
+        },
+        {
+          "index": 52,
+          "timestamp": 2.12,
+          "detections": 5
+        },
+        {
+          "index": 53,
+          "timestamp": 2.16,
+          "detections": 6
+        },
+        {
+          "index": 54,
+          "timestamp": 2.2,
+          "detections": 6
+        },
+        {
+          "index": 55,
+          "timestamp": 2.24,
+          "detections": 4
+        },
+        {
+          "index": 56,
+          "timestamp": 2.28,
+          "detections": 6
+        },
+        {
+          "index": 57,
+          "timestamp": 2.32,
+          "detections": 3
+        },
+        {
+          "index": 58,
+          "timestamp": 2.36,
+          "detections": 4
+        },
+        {
+          "index": 59,
+          "timestamp": 2.4,
+          "detections": 2
+        },
+        {
+          "index": 60,
+          "timestamp": 2.44,
+          "detections": 3
+        },
+        {
+          "index": 61,
+          "timestamp": 2.48,
+          "detections": 2
+        },
+        {
+          "index": 62,
+          "timestamp": 2.52,
+          "detections": 4
+        },
+        {
+          "index": 63,
+          "timestamp": 2.56,
+          "detections": 5
+        },
+        {
+          "index": 64,
+          "timestamp": 2.6,
+          "detections": 3
+        },
+        {
+          "index": 65,
+          "timestamp": 2.64,
+          "detections": 4
+        },
+        {
+          "index": 66,
+          "timestamp": 2.68,
+          "detections": 4
+        },
+        {
+          "index": 67,
+          "timestamp": 2.72,
+          "detections": 4
+        },
+        {
+          "index": 68,
+          "timestamp": 2.76,
+          "detections": 3
+        },
+        {
+          "index": 69,
+          "timestamp": 2.8,
+          "detections": 4
+        },
+        {
+          "index": 70,
+          "timestamp": 2.84,
+          "detections": 5
+        },
+        {
+          "index": 71,
+          "timestamp": 2.88,
+          "detections": 5
+        },
+        {
+          "index": 72,
+          "timestamp": 2.92,
+          "detections": 5
+        },
+        {
+          "index": 73,
+          "timestamp": 2.96,
+          "detections": 7
+        },
+        {
+          "index": 74,
+          "timestamp": 3.0,
+          "detections": 6
+        },
+        {
+          "index": 75,
+          "timestamp": 3.04,
+          "detections": 7
+        },
+        {
+          "index": 76,
+          "timestamp": 3.08,
+          "detections": 7
+        },
+        {
+          "index": 77,
+          "timestamp": 3.12,
+          "detections": 8
+        },
+        {
+          "index": 78,
+          "timestamp": 3.16,
+          "detections": 5
+        },
+        {
+          "index": 79,
+          "timestamp": 3.2,
+          "detections": 5
+        },
+        {
+          "index": 80,
+          "timestamp": 3.24,
+          "detections": 4
+        },
+        {
+          "index": 81,
+          "timestamp": 3.28,
+          "detections": 4
+        },
+        {
+          "index": 82,
+          "timestamp": 3.32,
+          "detections": 2
+        },
+        {
+          "index": 83,
+          "timestamp": 3.36,
+          "detections": 2
+        },
+        {
+          "index": 84,
+          "timestamp": 3.4,
+          "detections": 4
+        },
+        {
+          "index": 85,
+          "timestamp": 3.44,
+          "detections": 3
+        },
+        {
+          "index": 86,
+          "timestamp": 3.48,
+          "detections": 2
+        },
+        {
+          "index": 87,
+          "timestamp": 3.52,
+          "detections": 2
+        },
+        {
+          "index": 88,
+          "timestamp": 3.56,
+          "detections": 5
+        },
+        {
+          "index": 89,
+          "timestamp": 3.6,
+          "detections": 5
+        },
+        {
+          "index": 90,
+          "timestamp": 3.64,
+          "detections": 5
+        },
+        {
+          "index": 91,
+          "timestamp": 3.68,
+          "detections": 4
+        },
+        {
+          "index": 92,
+          "timestamp": 3.72,
+          "detections": 4
+        },
+        {
+          "index": 93,
+          "timestamp": 3.76,
+          "detections": 4
+        },
+        {
+          "index": 94,
+          "timestamp": 3.8,
+          "detections": 5
+        },
+        {
+          "index": 95,
+          "timestamp": 3.84,
+          "detections": 5
+        },
+        {
+          "index": 96,
+          "timestamp": 3.88,
+          "detections": 5
+        },
+        {
+          "index": 97,
+          "timestamp": 3.92,
+          "detections": 4
+        },
+        {
+          "index": 98,
+          "timestamp": 3.96,
+          "detections": 7
+        },
+        {
+          "index": 99,
+          "timestamp": 4.0,
+          "detections": 6
+        },
+        {
+          "index": 100,
+          "timestamp": 4.04,
+          "detections": 8
+        },
+        {
+          "index": 101,
+          "timestamp": 4.08,
+          "detections": 7
+        },
+        {
+          "index": 102,
+          "timestamp": 4.12,
+          "detections": 7
+        },
+        {
+          "index": 103,
+          "timestamp": 4.16,
+          "detections": 6
+        },
+        {
+          "index": 104,
+          "timestamp": 4.2,
+          "detections": 7
+        },
+        {
+          "index": 105,
+          "timestamp": 4.24,
+          "detections": 5
+        },
+        {
+          "index": 106,
+          "timestamp": 4.28,
+          "detections": 5
+        },
+        {
+          "index": 107,
+          "timestamp": 4.32,
+          "detections": 4
+        },
+        {
+          "index": 108,
+          "timestamp": 4.36,
+          "detections": 3
+        },
+        {
+          "index": 109,
+          "timestamp": 4.4,
+          "detections": 3
+        },
+        {
+          "index": 110,
+          "timestamp": 4.44,
+          "detections": 1
+        },
+        {
+          "index": 111,
+          "timestamp": 4.48,
+          "detections": 2
+        },
+        {
+          "index": 112,
+          "timestamp": 4.52,
+          "detections": 3
+        },
+        {
+          "index": 113,
+          "timestamp": 4.56,
+          "detections": 3
+        },
+        {
+          "index": 114,
+          "timestamp": 4.6,
+          "detections": 3
+        },
+        {
+          "index": 115,
+          "timestamp": 4.64,
+          "detections": 3
+        },
+        {
+          "index": 116,
+          "timestamp": 4.68,
+          "detections": 1
+        },
+        {
+          "index": 117,
+          "timestamp": 4.72,
+          "detections": 3
+        },
+        {
+          "index": 118,
+          "timestamp": 4.76,
+          "detections": 1
+        },
+        {
+          "index": 119,
+          "timestamp": 4.8,
+          "detections": 2
+        },
+        {
+          "index": 120,
+          "timestamp": 4.84,
+          "detections": 1
+        },
+        {
+          "index": 121,
+          "timestamp": 4.88,
+          "detections": 3
+        },
+        {
+          "index": 122,
+          "timestamp": 4.92,
+          "detections": 2
+        },
+        {
+          "index": 123,
+          "timestamp": 4.96,
+          "detections": 1
+        },
+        {
+          "index": 124,
+          "timestamp": 5.0,
+          "detections": 2
+        },
+        {
+          "index": 125,
+          "timestamp": 5.04,
+          "detections": 2
+        },
+        {
+          "index": 126,
+          "timestamp": 5.08,
+          "detections": 2
+        },
+        {
+          "index": 127,
+          "timestamp": 5.12,
+          "detections": 2
+        },
+        {
+          "index": 128,
+          "timestamp": 5.16,
+          "detections": 4
+        },
+        {
+          "index": 129,
+          "timestamp": 5.2,
+          "detections": 1
+        },
+        {
+          "index": 130,
+          "timestamp": 5.24,
+          "detections": 4
+        },
+        {
+          "index": 131,
+          "timestamp": 5.28,
+          "detections": 3
+        },
+        {
+          "index": 132,
+          "timestamp": 5.32,
+          "detections": 4
+        },
+        {
+          "index": 133,
+          "timestamp": 5.36,
+          "detections": 2
+        },
+        {
+          "index": 134,
+          "timestamp": 5.4,
+          "detections": 4
+        },
+        {
+          "index": 135,
+          "timestamp": 5.44,
+          "detections": 5
+        },
+        {
+          "index": 136,
+          "timestamp": 5.48,
+          "detections": 4
+        },
+        {
+          "index": 137,
+          "timestamp": 5.52,
+          "detections": 6
+        },
+        {
+          "index": 138,
+          "timestamp": 5.56,
+          "detections": 4
+        },
+        {
+          "index": 139,
+          "timestamp": 5.6,
+          "detections": 5
+        },
+        {
+          "index": 140,
+          "timestamp": 5.64,
+          "detections": 6
+        },
+        {
+          "index": 141,
+          "timestamp": 5.68,
+          "detections": 6
+        },
+        {
+          "index": 142,
+          "timestamp": 5.72,
+          "detections": 7
+        },
+        {
+          "index": 143,
+          "timestamp": 5.76,
+          "detections": 7
+        },
+        {
+          "index": 144,
+          "timestamp": 5.8,
+          "detections": 4
+        },
+        {
+          "index": 145,
+          "timestamp": 5.84,
+          "detections": 3
+        },
+        {
+          "index": 146,
+          "timestamp": 5.88,
+          "detections": 3
+        },
+        {
+          "index": 147,
+          "timestamp": 5.92,
+          "detections": 4
+        },
+        {
+          "index": 148,
+          "timestamp": 5.96,
+          "detections": 5
+        },
+        {
+          "index": 149,
+          "timestamp": 6.0,
+          "detections": 5
+        },
+        {
+          "index": 150,
+          "timestamp": 6.04,
+          "detections": 6
+        },
+        {
+          "index": 151,
+          "timestamp": 6.08,
+          "detections": 3
+        },
+        {
+          "index": 152,
+          "timestamp": 6.12,
+          "detections": 4
+        },
+        {
+          "index": 153,
+          "timestamp": 6.16,
+          "detections": 5
+        },
+        {
+          "index": 154,
+          "timestamp": 6.2,
+          "detections": 5
+        },
+        {
+          "index": 155,
+          "timestamp": 6.24,
+          "detections": 3
+        },
+        {
+          "index": 156,
+          "timestamp": 6.28,
+          "detections": 3
+        },
+        {
+          "index": 157,
+          "timestamp": 6.32,
+          "detections": 5
+        },
+        {
+          "index": 158,
+          "timestamp": 6.36,
+          "detections": 4
+        },
+        {
+          "index": 159,
+          "timestamp": 6.4,
+          "detections": 3
+        },
+        {
+          "index": 160,
+          "timestamp": 6.44,
+          "detections": 2
+        },
+        {
+          "index": 161,
+          "timestamp": 6.48,
+          "detections": 3
+        },
+        {
+          "index": 162,
+          "timestamp": 6.52,
+          "detections": 4
+        },
+        {
+          "index": 163,
+          "timestamp": 6.56,
+          "detections": 4
+        },
+        {
+          "index": 164,
+          "timestamp": 6.6,
+          "detections": 3
+        },
+        {
+          "index": 165,
+          "timestamp": 6.64,
+          "detections": 3
+        },
+        {
+          "index": 166,
+          "timestamp": 6.68,
+          "detections": 4
+        },
+        {
+          "index": 167,
+          "timestamp": 6.72,
+          "detections": 3
+        },
+        {
+          "index": 168,
+          "timestamp": 6.76,
+          "detections": 6
+        },
+        {
+          "index": 169,
+          "timestamp": 6.8,
+          "detections": 4
+        },
+        {
+          "index": 170,
+          "timestamp": 6.84,
+          "detections": 3
+        },
+        {
+          "index": 171,
+          "timestamp": 6.88,
+          "detections": 3
+        },
+        {
+          "index": 172,
+          "timestamp": 6.92,
+          "detections": 4
+        },
+        {
+          "index": 173,
+          "timestamp": 6.96,
+          "detections": 4
+        },
+        {
+          "index": 174,
+          "timestamp": 7.0,
+          "detections": 3
+        },
+        {
+          "index": 175,
+          "timestamp": 7.04,
+          "detections": 5
+        },
+        {
+          "index": 176,
+          "timestamp": 7.08,
+          "detections": 4
+        },
+        {
+          "index": 177,
+          "timestamp": 7.12,
+          "detections": 2
+        },
+        {
+          "index": 178,
+          "timestamp": 7.16,
+          "detections": 4
+        },
+        {
+          "index": 179,
+          "timestamp": 7.2,
+          "detections": 2
+        },
+        {
+          "index": 180,
+          "timestamp": 7.24,
+          "detections": 5
+        },
+        {
+          "index": 181,
+          "timestamp": 7.28,
+          "detections": 3
+        },
+        {
+          "index": 182,
+          "timestamp": 7.32,
+          "detections": 3
+        },
+        {
+          "index": 183,
+          "timestamp": 7.36,
+          "detections": 3
+        },
+        {
+          "index": 184,
+          "timestamp": 7.4,
+          "detections": 4
+        },
+        {
+          "index": 185,
+          "timestamp": 7.44,
+          "detections": 4
+        },
+        {
+          "index": 186,
+          "timestamp": 7.48,
+          "detections": 5
+        },
+        {
+          "index": 187,
+          "timestamp": 7.52,
+          "detections": 5
+        },
+        {
+          "index": 188,
+          "timestamp": 7.56,
+          "detections": 5
+        }
+      ],
+      "model_view_count": 6,
+      "model_input_size": 320,
+      "total_model_views": 1134,
+      "detections": 781,
+      "cache_bytes": 5750784,
+      "elapsed_seconds": 114.70614470000146
+    },
+    "example-clis": {
+      "image_detections": 42,
+      "decoder_frames": [
+        188,
+        189
+      ],
+      "detector_stdout": "{\"source\": \".test-data\\\\camera\\\\ricoh-theta-sample.jpg\", \"view_count\": 34, \"detection_count\": 42}"
+    }
+  },
+  "fixtures": {
+    "pannellum-panorama": "505a9c0093677ab7cd636584bc37672ef3eee4dda2f4f057854e762ed04ffd07",
+    "ricoh-theta-panorama": "d9c4eff770025284900123030d4e9c0563ee8011022c7a34e571f04de142a317",
+    "pannellum-cube-front": "72b0ba362e8b2562aef5d6f441a179ee108624c2047840162e9001ffce1443fe",
+    "pannellum-cube-right": "47bcd74dff1019b652f0a529021a2e2be57659268a767c2bfeec4327c223de2a",
+    "pannellum-cube-back": "535683a379dd726d9173dcb8053c9aacc2e749b513ff46afa967a31e8f03b1bf",
+    "pannellum-cube-left": "210a87914438b14dcbc7e12a88b1ed1e0be5c9dd9accd42028aac8195d3daedc",
+    "pannellum-cube-up": "ccbfdb47db1c32d18a82ed473135b15f6795014e08ff7851ca2754f995de5e47",
+    "pannellum-cube-down": "9af93879f018c08871c77180e8cc89273f002596b7ec474d07b2847dd1581829",
+    "threejs-pano-mp4": "2c2057d542ec30052f16250e9ce3568870dfa4219af2c14f8e172fee36a5966e",
+    "threejs-pano-webm": "60644e17ee7e2535ed589cc36cb5579aee5159d31bb5145bb6d42459062a9e0d",
+    "yolo11n": "0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1"
+  },
+  "validation_runs": {
+    "complete_suite": "120 passed in 287.15 seconds",
+    "minimum_dependencies_installed_wheel": "114 passed, 6 opt-in integration tests skipped",
+    "isolated_wheel": "NumPy-only core and optional Pillow installations passed"
+  }
+}
