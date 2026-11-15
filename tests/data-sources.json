@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "description": "Two optional stitched photographs for explicit image-pipeline validation.",
+  "entries": [
+    {
+      "id": "pannellum-panorama",
+      "path": "panorama/examplepano.jpg",
+      "url": "https://raw.githubusercontent.com/mpetroff/pannellum/master/examples/examplepano.jpg",
+      "role": "equirectangular photograph",
+      "source_page": "https://github.com/mpetroff/pannellum",
+      "license_url": "https://github.com/mpetroff/pannellum/blob/master/COPYING",
+      "notes": "Media may have third-party attribution; retained only in ignored local test cache.",
+      "sha256": "505a9c0093677ab7cd636584bc37672ef3eee4dda2f4f057854e762ed04ffd07",
+      "bytes": 2022065,
+      "group": "images"
+    },
+    {
+      "id": "ricoh-theta-panorama",
+      "path": "camera/ricoh-theta-sample.jpg",
+      "url": "https://raw.githubusercontent.com/mitsuruog/richo-theta-with-threejs/master/images/textures/ricoh-theta-sample.jpg",
+      "role": "Ricoh THETA photographic panorama",
+      "source_page": "https://github.com/mitsuruog/richo-theta-with-threejs",
+      "license_url": "https://github.com/mitsuruog/richo-theta-with-threejs",
+      "notes": "Inspect retained EXIF to verify camera identity; media attribution follows upstream.",
+      "sha256": "d9c4eff770025284900123030d4e9c0563ee8011022c7a34e571f04de142a317",
+      "bytes": 819794,
+      "group": "images"
+    }
+  ]
+}
