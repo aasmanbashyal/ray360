@@ -9,7 +9,17 @@ boxes back to the panorama, including objects crossing its seam or covering a po
 Python 3.11+. NumPy is the only required dependency. Version 0.1.0 is the focused
 first-release API; the earlier development API has been removed.
 
-## Install from this checkout
+## Install
+
+```bash
+uv add ray360                 # NumPy core
+uv add "ray360[image]"        # Optional Pillow image helpers
+```
+
+With pip, use `pip install ray360` or `pip install "ray360[image]"`.
+
+For development, clone [the repository](https://github.com/aasmanbashyal/ray360)
+and install from the checkout:
 
 ```bash
 uv sync --locked                         # NumPy core
@@ -17,9 +27,8 @@ uv sync --locked --extra image           # Optional Pillow image helpers
 uv sync --locked --group dev --extra image
 ```
 
-To install into another project, build the wheel with `uv build --no-sources`,
-then use `uv pip install /path/to/ray360-0.1.0-py3-none-any.whl` in its environment.
-An index release is not required to use this checkout.
+To test a local build in another environment, run `uv build --no-sources`,
+then use `uv pip install /path/to/ray360-0.1.0-py3-none-any.whl`.
 
 ## Extract a view and map a prediction
 
@@ -112,7 +121,7 @@ regions = front.map_boxes([Box2D(200, 180, 300, 320)])
 ```
 
 Faces are named `front`, `right`, `back`, `left`, `up`, and `down`. Each is square
-with a 90-degree field of view. [The orientation table](docs/api.md#cubemap-conversion)
+with a 90-degree field of view. [The orientation table](https://github.com/aasmanbashyal/ray360/blob/main/docs/api.md#cubemap-conversion)
 defines the pole faces. Bilinear conversion back to a panorama samples adjacent
 faces at cube boundaries. Use `interpolation="nearest"` in both directions for
 label arrays. Conversion preserves dtype and can lose detail through resampling.
@@ -128,7 +137,7 @@ network streaming, and segmentation/pose annotation codecs are outside this rele
 `ray360.experimental` contains sampled spherical IoU and class-aware NMS. They
 are outside the stable root API. Small objects can miss every sample and receive
 zero overlap, even against themselves. NMS suppresses predictions; it does not
-fuse partial detections or establish detector accuracy. See [scope](docs/scope.md).
+fuse partial detections or establish detector accuracy. See [scope](https://github.com/aasmanbashyal/ray360/blob/main/docs/scope.md).
 
 ## Examples and development
 
@@ -141,15 +150,18 @@ uv build --no-sources
 uv run --no-sync python scripts/check_wheel.py
 ```
 
-[The basic example](examples/basic.py) needs only NumPy. It can write a synthetic
+[The basic example](https://github.com/aasmanbashyal/ray360/blob/main/examples/basic.py) needs only NumPy. It can write a synthetic
 overlay with `--output .test-results/demo.png` when Pillow is installed.
-[The model example](examples/detect.py) and [decoder example](examples/video_frames.py)
+[The model example](https://github.com/aasmanbashyal/ray360/blob/main/examples/detect.py) and [decoder example](https://github.com/aasmanbashyal/ray360/blob/main/examples/video_frames.py)
 show application-owned integrations with separately installed dependencies.
-The opt-in [end-to-end suite](docs/validation.md#real-media-and-model-validation)
+The opt-in [end-to-end suite](https://github.com/aasmanbashyal/ray360/blob/main/docs/validation.md#real-media-and-model-validation)
 executes these examples and runs cube conversion and CPU detection on every frame
 of two real panorama video encodings. It also checks two stitched photos and
 photographic cube faces. Media and model weights are checksum-verified local fixtures.
 
-See [API conventions](docs/api.md), [validation](docs/validation.md), and
-[whole-panorama benchmarks](docs/benchmarks.md). The ordinary test suite never
+See [API conventions](https://github.com/aasmanbashyal/ray360/blob/main/docs/api.md), [validation](https://github.com/aasmanbashyal/ray360/blob/main/docs/validation.md), and
+[whole-panorama benchmarks](https://github.com/aasmanbashyal/ray360/blob/main/docs/benchmarks.md). The ordinary test suite never
 downloads media or model weights.
+
+Maintainers can follow the [release guide](https://github.com/aasmanbashyal/ray360/blob/main/docs/releasing.md)
+to publish a version from a Git tag.
