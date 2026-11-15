@@ -101,13 +101,16 @@ def main() -> int:
     parser.add_argument("--manifest", type=Path, default=ROOT / "tests/data-sources.json")
     parser.add_argument("--lock", action="store_true")
     parser.add_argument("--verify-only", action="store_true")
+    parser.add_argument(
+        "--include-e2e", action="store_true", help="Include cube faces, video and detector weights"
+    )
     parser.add_argument("--max-file-mib", type=int, default=128)
     args = parser.parse_args()
     if args.max_file_mib < 1:
         parser.error("--max-file-mib must be positive")
     manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
     args.directory.mkdir(parents=True, exist_ok=True)
-    entries = manifest["entries"]
+    entries = [e for e in manifest["entries"] if args.include_e2e or e.get("group") != "e2e"]
     errors = []
     completed = {}
     with ThreadPoolExecutor(max_workers=4) as pool:

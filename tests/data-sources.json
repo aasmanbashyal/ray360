@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "description": "Two optional stitched photographs for explicit image-pipeline validation.",
+  "description": "Optional stitched photos, cubemap faces, two panorama video encodings and a detector for explicit end-to-end checks. Assets remain in the ignored cache.",
   "entries": [
     {
       "id": "pannellum-panorama",
@@ -25,6 +25,122 @@
       "sha256": "d9c4eff770025284900123030d4e9c0563ee8011022c7a34e571f04de142a317",
       "bytes": 819794,
       "group": "images"
+    },
+    {
+      "id": "pannellum-cube-front",
+      "path": "cubemap/front.jpg",
+      "url": "https://raw.githubusercontent.com/mpetroff/pannellum/master/examples/examplepanocube0.jpg",
+      "role": "photographic cubemap face",
+      "source_page": "https://github.com/mpetroff/pannellum/tree/master/examples",
+      "license_url": "https://github.com/mpetroff/pannellum/blob/master/COPYING",
+      "notes": "",
+      "sha256": "72b0ba362e8b2562aef5d6f441a179ee108624c2047840162e9001ffce1443fe",
+      "bytes": 416590,
+      "group": "e2e"
+    },
+    {
+      "id": "pannellum-cube-right",
+      "path": "cubemap/right.jpg",
+      "url": "https://raw.githubusercontent.com/mpetroff/pannellum/master/examples/examplepanocube1.jpg",
+      "role": "photographic cubemap face",
+      "source_page": "https://github.com/mpetroff/pannellum/tree/master/examples",
+      "license_url": "https://github.com/mpetroff/pannellum/blob/master/COPYING",
+      "notes": "",
+      "sha256": "47bcd74dff1019b652f0a529021a2e2be57659268a767c2bfeec4327c223de2a",
+      "bytes": 362016,
+      "group": "e2e"
+    },
+    {
+      "id": "pannellum-cube-back",
+      "path": "cubemap/back.jpg",
+      "url": "https://raw.githubusercontent.com/mpetroff/pannellum/master/examples/examplepanocube2.jpg",
+      "role": "photographic cubemap face",
+      "source_page": "https://github.com/mpetroff/pannellum/tree/master/examples",
+      "license_url": "https://github.com/mpetroff/pannellum/blob/master/COPYING",
+      "notes": "",
+      "sha256": "535683a379dd726d9173dcb8053c9aacc2e749b513ff46afa967a31e8f03b1bf",
+      "bytes": 290131,
+      "group": "e2e"
+    },
+    {
+      "id": "pannellum-cube-left",
+      "path": "cubemap/left.jpg",
+      "url": "https://raw.githubusercontent.com/mpetroff/pannellum/master/examples/examplepanocube3.jpg",
+      "role": "photographic cubemap face",
+      "source_page": "https://github.com/mpetroff/pannellum/tree/master/examples",
+      "license_url": "https://github.com/mpetroff/pannellum/blob/master/COPYING",
+      "notes": "",
+      "sha256": "210a87914438b14dcbc7e12a88b1ed1e0be5c9dd9accd42028aac8195d3daedc",
+      "bytes": 377837,
+      "group": "e2e"
+    },
+    {
+      "id": "pannellum-cube-up",
+      "path": "cubemap/up.jpg",
+      "url": "https://raw.githubusercontent.com/mpetroff/pannellum/master/examples/examplepanocube4.jpg",
+      "role": "photographic cubemap face",
+      "source_page": "https://github.com/mpetroff/pannellum/tree/master/examples",
+      "license_url": "https://github.com/mpetroff/pannellum/blob/master/COPYING",
+      "notes": "",
+      "sha256": "ccbfdb47db1c32d18a82ed473135b15f6795014e08ff7851ca2754f995de5e47",
+      "bytes": 41408,
+      "group": "e2e"
+    },
+    {
+      "id": "pannellum-cube-down",
+      "path": "cubemap/down.jpg",
+      "url": "https://raw.githubusercontent.com/mpetroff/pannellum/master/examples/examplepanocube5.jpg",
+      "role": "photographic cubemap face",
+      "source_page": "https://github.com/mpetroff/pannellum/tree/master/examples",
+      "license_url": "https://github.com/mpetroff/pannellum/blob/master/COPYING",
+      "notes": "",
+      "sha256": "9af93879f018c08871c77180e8cc89273f002596b7ec474d07b2847dd1581829",
+      "bytes": 731110,
+      "group": "e2e"
+    },
+    {
+      "id": "threejs-pano-mp4",
+      "path": "video/pano.mp4",
+      "url": "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/pano.mp4",
+      "role": "360 video container/codec fixture",
+      "source_page": "https://github.com/mrdoob/three.js/tree/dev/examples/textures",
+      "license_url": "https://github.com/mrdoob/three.js/blob/dev/LICENSE",
+      "notes": "Read complete clip, not a renamed ordinary video.",
+      "sha256": "2c2057d542ec30052f16250e9ce3568870dfa4219af2c14f8e172fee36a5966e",
+      "bytes": 962456,
+      "group": "e2e",
+      "expected_frames": 188,
+      "first_timestamp": 0.0,
+      "last_timestamp": 7.48,
+      "codec": "h264"
+    },
+    {
+      "id": "threejs-pano-webm",
+      "path": "video/pano.webm",
+      "url": "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/pano.webm",
+      "role": "360 video container/codec fixture",
+      "source_page": "https://github.com/mrdoob/three.js/tree/dev/examples/textures",
+      "license_url": "https://github.com/mrdoob/three.js/blob/dev/LICENSE",
+      "notes": "Read complete clip, not a renamed ordinary video.",
+      "sha256": "60644e17ee7e2535ed589cc36cb5579aee5159d31bb5145bb6d42459062a9e0d",
+      "bytes": 876810,
+      "group": "e2e",
+      "expected_frames": 189,
+      "first_timestamp": 0.04,
+      "last_timestamp": 7.56,
+      "codec": "vp8"
+    },
+    {
+      "id": "yolo11n",
+      "path": "models/yolo11n.pt",
+      "url": "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11n.pt",
+      "role": "official pretrained model checkpoint",
+      "source_page": "https://github.com/ultralytics/assets/releases/tag/v8.3.0",
+      "license_url": "https://www.ultralytics.com/license",
+      "notes": "Explicitly downloaded for local CPU inference tests; not bundled in distribution.",
+      "sha256": "0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1",
+      "bytes": 5613764,
+      "group": "e2e"
     }
   ]
 }

@@ -9,6 +9,12 @@ import pytest
 
 def pytest_addoption(parser):
     parser.addoption(
+        "--e2e", action="store_true", help="Run real cube, decoder and model integration tests"
+    )
+    parser.addoption(
+        "--e2e-output", default=None, help="New directory for end-to-end reports and images"
+    )
+    parser.addoption(
         "--public-data",
         nargs="?",
         const=".test-data",
@@ -19,9 +25,20 @@ def pytest_addoption(parser):
 
 def pytest_configure(config):
     config.addinivalue_line("markers", "public_data: optional downloaded stitched panoramas")
+    config.addinivalue_line(
+        "markers", "e2e: optional real media and external model/decoder integration"
+    )
 
 
 def pytest_collection_modifyitems(config, items):
+    if not config.getoption("--e2e"):
+        for item in items:
+            if "e2e" in item.keywords:
+                item.add_marker(
+                    pytest.mark.skip(
+                        reason="Pass --e2e with the external application dependencies installed"
+                    )
+                )
     if config.getoption("--public-data") is None:
         for item in items:
             if "public_data" in item.keywords:
@@ -36,6 +53,8 @@ def public_photos(pytestconfig):
     manifest = json.loads((Path(__file__).parent / "data-sources.json").read_text(encoding="utf-8"))
     paths = []
     for entry in manifest["entries"]:
+        if entry.get("group") == "e2e":
+            continue
         path = root / entry["path"]
         assert path.is_file(), f"Run scripts/fetch_test_data.py; missing {path}"
         with path.open("rb") as stream:
