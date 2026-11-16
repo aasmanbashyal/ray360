@@ -19,6 +19,7 @@
 | `to_cubemap` | A `Panorama` to six named NumPy arrays |
 | `to_cubemap_cross` | A `Panorama` to one image with all six faces in a cross |
 | `from_cubemap` | Six matching arrays to an equirectangular array |
+| `from_cubemap_cross` | A cross to equirectangular pixels and mapped box outlines |
 
 Methods documented here and in the README form the first-release contract.
 `ray360.geometry` contains coordinate utilities. Other helpers in implementation
@@ -142,9 +143,22 @@ directly into the face tiles, with no full-size face images to assemble.
 `from_cubemap(faces, target, interpolation="bilinear", chunk_rows=128)` returns an
 array with `target.height` rows and `target.width` columns. The target must be
 `Equirectangular` and may have its own rotation. All six names are required, and
-faces must have identical square shapes and dtypes. Input dictionary order does
-not affect conversion. No packed strip, cross layout, or external engine convention
-is inferred.
+faces must have identical square shapes and dtypes. Face names set the orientation.
+
+`from_cubemap_cross(cross, target=None, boxes=(), draw_boxes=False, ...)` accepts
+the horizontal layout above. Its default target is a `4*n` by `2*n` panorama.
+Pass an explicit `Equirectangular` for a different resolution or orientation.
+The return value is `(image, polygon_groups)`, with one group per input box in
+input order. Each box can be four pixel-edge coordinates or a `Box2D` to retain
+its metadata. Boxes wholly in blank tiles have empty groups.
+
+For a box on one face, Ray360 projects its sampled boundary. For a box spanning
+multiple faces, Ray360 joins the pixel coverage on the target grid before tracing
+the outline. This keeps shared cube edges inside the region. Pieces on either
+side of the panorama seam stay in the same group. At small output sizes, a
+multi-face box can cover fewer than one output pixel and produce an empty group.
+The optional `draw_boxes=True` uses Pillow to render the polygons and returns an
+RGB image. By default the original channel dimensions and dtype are preserved.
 
 Reverse conversion assigns each ray to its dominant cube axis, with ties resolved
 in X, Y, Z order. Bilinear filter taps outside a face sample the neighboring face

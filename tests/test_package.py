@@ -22,6 +22,7 @@ def test_public_package_contract():
         "coverage_views",
         "cube_projections",
         "from_cubemap",
+        "from_cubemap_cross",
         "to_cubemap",
         "to_cubemap_cross",
     }
@@ -45,9 +46,11 @@ def test_core_import_and_processing_never_import_optional_backends():
 import importlib.util
 import sys
 import numpy as np
-from ray360 import Panorama, Perspective
+from ray360 import Panorama, Perspective, from_cubemap_cross
 assert importlib.util.find_spec('spherekit') is None
 assert Panorama(np.zeros((10, 20, 3), np.uint8)).view(Perspective(8, 8)).image.shape == (8, 8, 3)
+image, [polygons] = from_cubemap_cross(np.zeros((24, 32, 3), np.uint8), boxes=[(27, 10, 29, 14)])
+assert image.shape == (16, 32, 3) and len(polygons) == 2
 assert not any(name in sys.modules for name in ('PIL', 'av', 'torch', 'ultralytics'))
 for name in ('media', 'cameras', 'datasets', 'ai', 'torch', 'cli'):
     assert importlib.util.find_spec('ray360.' + name) is None

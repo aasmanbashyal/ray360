@@ -1,16 +1,16 @@
 # Ray360
 
-Geometry for computer vision on **stitched 360 images and video frames**.
+Perspective views, cubemap crosses, and seam-aware annotation mapping for **stitched 360 images and video frames**.
 
 [![PyPI](https://img.shields.io/pypi/v/ray360)](https://pypi.org/project/ray360/)
 [![Python](https://img.shields.io/pypi/pyversions/ray360)](https://pypi.org/project/ray360/)
 [![Tests](https://github.com/aasmanbashyal/ray360/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/aasmanbashyal/ray360/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/aasmanbashyal/ray360/blob/main/LICENSE)
 
-Extract perspective views or cube faces from an equirectangular panorama, prepare
-them for a model, and map its predictions back to the sphere. Ray360 retains the
-geometry through crop, resize, and letterbox operations, including objects that
-cross the panorama seam or cover a pole.
+Extract perspective views for a model and map its predictions back to the sphere.
+Convert between equirectangular panoramas and cubemap crosses while carrying box
+annotations across cube faces and the panorama seam. View transforms retain the
+geometry through crop, resize, and letterbox operations.
 
 Python 3.11+ · NumPy core · Optional Pillow image helpers · MIT license
 
@@ -40,8 +40,8 @@ Stitched panorama or decoded video frame
 | Task | Ray360 provides |
 | --- | --- |
 | Prepare model inputs | Perspective views, full-sphere view coverage, and preprocessing |
-| Convert projections | Equirectangular images ↔ six named cube faces |
-| Map predictions | Inverse point transforms and spherical regions from view-space boxes |
+| Convert projections | Equirectangular images ↔ named cube faces and horizontal crosses |
+| Map predictions | View-space points and boxes, plus polygon outlines from cubemap cross boxes |
 | Render mapped objects | Seam-split polygons, approximate rectangles, and pixel membership masks |
 | Process repeated frames | Reusable coordinate maps with a bounded cache |
 | Save geometry | Versioned JSON-compatible transforms, regions, and provenance |
@@ -133,6 +133,34 @@ and below front and left, front, right, and back across the middle. To save it
 with the `image` extra, use `ray360.image.write_image("cubemap.png", cross)`.
 
 ![Cubemap cross with left, front, right, and back across the middle, and top and bottom on either side of front](https://raw.githubusercontent.com/aasmanbashyal/ray360/main/docs/assets/cubemap-faces.webp)
+
+### Reconstruct a cubemap cross with boxes
+
+Use the `(x1, y1, x2, y2)` coordinates measured on the full-size cross image.
+This example uses the Back face of a cross with 1024 pixels per face.
+
+```python
+import numpy as np
+from PIL import Image
+
+from ray360 import Equirectangular, from_cubemap_cross
+from ray360.image import write_image
+
+with Image.open("cubemap.png") as source:
+    cross = np.asarray(source.convert("RGB"))
+
+image, [outline] = from_cubemap_cross(
+    cross,
+    Equirectangular(2048, 1024),
+    boxes=[(3350, 1410, 3820, 1735)],
+    draw_boxes=True,
+)
+write_image("panorama-with-box.png", image)
+```
+
+Each input box has one group of polygons, even when it crosses multiple faces or
+the panorama seam. Set `draw_boxes=True` with the `image` extra to draw the
+outlines. The default returns clean pixels and the same polygon groups.
 
 ### Read an image and draw mapped predictions
 

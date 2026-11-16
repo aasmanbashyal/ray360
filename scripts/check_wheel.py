@@ -38,6 +38,9 @@ np.testing.assert_array_equal(ray360.from_cubemap(faces, panorama.projection), p
 cross = ray360.to_cubemap_cross(panorama, 32)
 assert cross.shape == (96, 128, 3) and cross.dtype == np.uint8
 np.testing.assert_array_equal(cross[32:64, 32:64], faces['front'])
+rebuilt, [seam] = ray360.from_cubemap_cross(cross, panorama.projection, boxes=[(106, 40, 118, 56)])
+np.testing.assert_array_equal(rebuilt, panorama.image)
+assert len(seam) == 2
 view = panorama.view(Perspective(100, 50, yaw=180)).letterbox(100, 100)
 region = view.map_boxes([Box2D(25, 30, 75, 70, label='object')])[0]
 assert len(region.polygons(panorama.projection)) == 2
@@ -54,6 +57,8 @@ if sys.argv[1] == 'image':
     np.testing.assert_array_equal(read_panorama('capture.v1.png').image, panorama.image)
     write_image('cubemap-cross.png', cross)
     np.testing.assert_array_equal(read_panorama('cubemap-cross.png').image, cross)
+    annotated, _ = ray360.from_cubemap_cross(cross, boxes=[(106, 40, 118, 56)], draw_boxes=True)
+    assert annotated.any()
 else:
     from ray360.image import read_panorama
     try:

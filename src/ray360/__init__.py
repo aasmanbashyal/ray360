@@ -1,7 +1,13 @@
-"""Perspective views, cubemaps and prediction mapping for stitched panoramas."""
+"""Perspective views, cubemap crosses and seam-aware annotation mapping for 360 images."""
 
 from .annotations import Box2D, Polygon2D, SphericalRegion
-from .cubemap import cube_projections, from_cubemap, to_cubemap, to_cubemap_cross
+from .cubemap import (
+    cube_projections,
+    from_cubemap,
+    from_cubemap_cross,
+    to_cubemap,
+    to_cubemap_cross,
+)
 from .panorama import Panorama, View
 from .projections import Equirectangular, Perspective, coverage_views
 from .remap import MapCache, ProjectionMap
@@ -23,6 +29,7 @@ __all__ = [
     "coverage_views",
     "cube_projections",
     "from_cubemap",
+    "from_cubemap_cross",
     "to_cubemap",
     "to_cubemap_cross",
 ]

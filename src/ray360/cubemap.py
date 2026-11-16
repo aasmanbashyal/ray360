@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
+from dataclasses import replace
 
 import numpy as np
-from numpy.typing import NDArray
+from numpy.typing import ArrayLike, NDArray
 
+from .annotations import Box2D, Polygon2D, SphericalRegion, _mask_to_polygons
 from .geometry import positive_int
 from .panorama import Panorama
 from .projections import Equirectangular, Perspective
@@ -93,6 +95,78 @@ def to_cubemap_cross(
         tile = output[row * size : (row + 1) * size, col * size : (col + 1) * size]
         mapping._sample_into(image, tile, interpolation=interpolation, chunk_rows=chunk_rows)
     return output
+
+
+def from_cubemap_cross(
+    cross: NDArray,
+    target: Equirectangular | None = None,
+    *,
+    boxes: Iterable[Box2D | ArrayLike] = (),
+    draw_boxes: bool = False,
+    interpolation: Interpolation = "bilinear",
+    chunk_rows: int = 128,
+) -> tuple[NDArray, list[list[Polygon2D]]]:
+    """Reconstruct a horizontal cube cross and map its pixel-edge xyxy boxes.
+
+    The default target is a 2:1 panorama, four face widths across. Each input
+    box has one list of output polygons, including an empty list for padding.
+    Multi-face boxes are joined at target-pixel resolution. Panorama seam pieces
+    stay in the same group. With draw_boxes=True, the image extra draws the
+    outlines on the returned RGB image and the polygon groups are still returned.
+    """
+    cross = validate_image(cross)
+    height, width = cross.shape[:2]
+    size = height // 3
+    if (height, width) != (3 * size, 4 * size):
+        raise ValueError("Expected a horizontal cubemap cross of size (3*n, 4*n).")
+    if target is None:
+        target = Equirectangular(width, 2 * size)
+    if not isinstance(target, Equirectangular):
+        raise TypeError("from_cubemap_cross requires an Equirectangular target.")
+
+    # Keep face tiles as views, with a shared placement convention for both conversions.
+    faces = {
+        name: cross[row * size : (row + 1) * size, col * size : (col + 1) * size]
+        for name, (row, col) in _CROSS_TILES.items()
+    }
+    projections = cube_projections(size)
+    mapped = [_cross_box_polygons(box, projections, target) for box in boxes]
+    pixels = from_cubemap(faces, target, interpolation=interpolation, chunk_rows=chunk_rows)
+    if draw_boxes:
+        from .image import overlay
+
+        pixels = overlay(pixels, (polygon for group in mapped for polygon in group))
+    return pixels, mapped
+
+
+def _cross_box_polygons(
+    box: Box2D | ArrayLike, projections: Mapping[str, Perspective], target: Equirectangular
+) -> list[Polygon2D]:
+    if not isinstance(box, Box2D):
+        values = np.asarray(box, dtype=np.float64)
+        if values.shape != (4,):
+            raise ValueError("A cubemap cross box requires four xyxy coordinates.")
+        box = Box2D(*values)
+
+    size = projections["front"].width
+    pieces = []
+    for name, (row, col) in _CROSS_TILES.items():
+        x, y = col * size, row * size
+        left, top = max(0, box.x1 - x), max(0, box.y1 - y)
+        right, bottom = min(size, box.x2 - x), min(size, box.y2 - y)
+        if left < right and top < bottom:
+            clipped = replace(box, x1=left, y1=top, x2=right, y2=bottom)
+            pieces.append(SphericalRegion(clipped, projections[name]))
+    if not pieces:
+        return []
+    if len(pieces) == 1:
+        return pieces[0].polygons(target)
+
+    # Trace the union perimeter across shared cube edges.
+    mask = pieces[0].rasterize(target)
+    for piece in pieces[1:]:
+        mask |= piece.rasterize(target)
+    return [replace(polygon, **box.metadata()) for polygon in _mask_to_polygons(mask)]
 
 
 def _owners(rays: NDArray) -> NDArray:

@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "ray360"
 version = "0.1.0"
-description = "Perspective views, cubemap conversion and prediction mapping for stitched panoramas"
+description = "Perspective views, cubemap crosses, and seam-aware annotation mapping for stitched 360 panoramas"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"

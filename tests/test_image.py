@@ -3,7 +3,7 @@ import importlib.util
 import numpy as np
 import pytest
 
-from ray360 import Box2D, Equirectangular, Perspective, SphericalRegion
+from ray360 import Box2D, Equirectangular, Perspective, SphericalRegion, from_cubemap_cross
 from ray360.image import overlay, read_panorama, write_image
 
 pytestmark = pytest.mark.skipif(
@@ -38,6 +38,19 @@ def test_outlines_do_not_mutate_input_or_connect_across_seam():
         overlay(image, [region])
     with pytest.raises(ValueError):
         overlay(image, [region], projection=Equirectangular(20, 10))
+
+
+def test_reverse_cross_draws_joined_outlines_without_an_internal_cube_edge():
+    cross = np.zeros((96, 128, 3), np.uint8)
+    target = Equirectangular(360, 180)
+    image, (joined, seam) = from_cubemap_cross(
+        cross, target, boxes=[(54, 40, 74, 56), (103, 40, 121, 57)], draw_boxes=True
+    )
+    assert len(joined) == 1 and len(seam) == 2
+    assert image.any() and not cross.any()
+    # The Front/Right cube boundary at yaw 45 is inside the first box.
+    assert not image[90, 225].any()
+    assert image[:, :24].any() and image[:, -24:].any()
 
 
 @pytest.mark.public_data
