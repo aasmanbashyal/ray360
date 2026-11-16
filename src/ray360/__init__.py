@@ -1,7 +1,7 @@
 """Perspective views, cubemaps and prediction mapping for stitched panoramas."""
 
 from .annotations import Box2D, Polygon2D, SphericalRegion
-from .cubemap import cube_projections, from_cubemap, to_cubemap
+from .cubemap import cube_projections, from_cubemap, to_cubemap, to_cubemap_cross
 from .panorama import Panorama, View
 from .projections import Equirectangular, Perspective, coverage_views
 from .remap import MapCache, ProjectionMap
@@ -24,4 +24,5 @@ __all__ = [
     "cube_projections",
     "from_cubemap",
     "to_cubemap",
+    "to_cubemap_cross",
 ]

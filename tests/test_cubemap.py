@@ -8,6 +8,7 @@ from ray360 import (
     cube_projections,
     from_cubemap,
     to_cubemap,
+    to_cubemap_cross,
 )
 
 
@@ -44,6 +45,62 @@ def test_face_orientation_and_panorama_conversion_match_independent_xyz_fields()
         )
         np.testing.assert_allclose(independent, expected[name], atol=1e-14)
     assert 0 < cache.nbytes <= cache.max_bytes
+
+
+@pytest.mark.parametrize("size", [1, 33])
+def test_cross_positions_and_orientations_match_independent_xyz_fields(size):
+    projection = Equirectangular(1024, 512, yaw=17, pitch=-23, roll=11)
+    rays, _ = projection.unproject(projection.pixel_grid())
+    faces = direction_faces(size)
+    blank = np.zeros((size, size, 3))
+    expected = np.concatenate(
+        [
+            np.concatenate((blank, faces["up"], blank, blank), axis=1),
+            np.concatenate(
+                tuple(faces[name] for name in ("left", "front", "right", "back")), axis=1
+            ),
+            np.concatenate((blank, faces["down"], blank, blank), axis=1),
+        ]
+    )
+    actual = to_cubemap_cross(Panorama(rays, projection), size, cache=None)
+    np.testing.assert_allclose(actual, expected, atol=2e-5)
+    assert actual.dtype == rays.dtype
+    assert actual.flags.c_contiguous
+
+
+def test_cross_matches_separate_faces_with_strided_images_and_reused_maps():
+    size = 271  # Wide enough to exercise reduced chunk rows and a partial final chunk.
+    rgb = np.random.default_rng(0).integers(0, 256, (48, 192, 3), dtype=np.uint8)[:, ::2]
+    max_label = np.uint64(np.iinfo(np.uint64).max)
+    labels = np.where(rgb[..., 0] < 128, np.uint64(0), max_label)
+    cache = MapCache()
+    for image, interpolation in ((rgb, "bilinear"), (labels, "nearest")):
+        panorama = Panorama(image)
+        faces = to_cubemap(panorama, size, interpolation=interpolation, cache=cache)
+        cross = to_cubemap_cross(panorama, size, interpolation=interpolation, cache=cache)
+        assert cross.dtype == image.dtype
+        assert cross.shape == (3 * size, 4 * size, *image.shape[2:])
+        expected = np.zeros_like(cross)
+        expected[:size, size : 2 * size] = faces["up"]
+        expected[size : 2 * size] = np.concatenate(
+            tuple(faces[name] for name in ("left", "front", "right", "back")), axis=1
+        )
+        expected[2 * size :, size : 2 * size] = faces["down"]
+        np.testing.assert_array_equal(cross, expected)
+    assert cache.nbytes == 6 * size * size * 9
+    assert cross.max() == max_label
+
+
+def test_cross_validates_panorama_size_and_interpolation():
+    panorama = Panorama(np.zeros((8, 16), dtype=bool))
+    with pytest.raises(TypeError, match="Panorama"):
+        to_cubemap_cross(panorama.image)
+    with pytest.raises(ValueError, match="size"):
+        to_cubemap_cross(panorama, 0)
+    with pytest.raises(ValueError, match="nearest"):
+        to_cubemap_cross(panorama, 1)
+    with pytest.raises(ValueError, match="interpolation"):
+        to_cubemap_cross(panorama, 1, interpolation="cubic")
 
 
 @pytest.mark.parametrize("rotation", [(0, 0, 0), (19, -37, 52)])

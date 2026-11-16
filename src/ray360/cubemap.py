@@ -10,7 +10,7 @@ from numpy.typing import NDArray
 from .geometry import positive_int
 from .panorama import Panorama
 from .projections import Equirectangular, Perspective
-from .remap import DEFAULT_CACHE, Interpolation, MapCache, sample, validate_image
+from .remap import DEFAULT_CACHE, Interpolation, MapCache, ProjectionMap, sample, validate_image
 
 _ORIENTATIONS = {
     "front": (0, 0),
@@ -19,6 +19,15 @@ _ORIENTATIONS = {
     "left": (-90, 0),
     "up": (0, 90),
     "down": (0, -90),
+}
+
+_CROSS_TILES = {
+    "front": (1, 1),
+    "right": (1, 2),
+    "back": (1, 3),
+    "left": (1, 0),
+    "up": (0, 1),
+    "down": (2, 1),
 }
 
 
@@ -52,6 +61,38 @@ def to_cubemap(
         name: panorama.view(projection, interpolation=interpolation, cache=cache).image
         for name, projection in cube_projections(size).items()
     }
+
+
+def to_cubemap_cross(
+    panorama: Panorama,
+    size: int = 512,
+    *,
+    interpolation: Interpolation = "bilinear",
+    cache: MapCache | None = DEFAULT_CACHE,
+) -> NDArray:
+    """Render an unfolded cube into a single image of height 3*size and width 4*size.
+
+    The middle row is left, front, right, back. Up and down touch the front
+    face above and below. Face orientation matches cube_projections. The six
+    empty tiles are zero, and the source dtype and channel dimensions are preserved.
+    """
+    if not isinstance(panorama, Panorama):
+        raise TypeError("to_cubemap_cross requires a Panorama.")
+    projections = cube_projections(size)
+    image = panorama.image
+    output = np.zeros((3 * size, 4 * size, *image.shape[2:]), dtype=image.dtype)
+    # Keep temporary sampling arrays small as the face width increases.
+    chunk_rows = min(128, max(1, 32_768 // size))
+    for name, projection in projections.items():
+        mapping = (
+            ProjectionMap.build(panorama.projection, projection)
+            if cache is None
+            else cache.get(panorama.projection, projection)
+        )
+        row, col = _CROSS_TILES[name]
+        tile = output[row * size : (row + 1) * size, col * size : (col + 1) * size]
+        mapping._sample_into(image, tile, interpolation=interpolation, chunk_rows=chunk_rows)
+    return output
 
 
 def _owners(rays: NDArray) -> NDArray:

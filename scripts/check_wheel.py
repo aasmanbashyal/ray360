@@ -29,12 +29,15 @@ installed = {d.metadata['Name'].lower() for d in importlib.metadata.distribution
 assert installed == expected, installed
 assert Path(ray360.__file__).is_relative_to(Path(sys.prefix)), ray360.__file__
 assert Path(ray360.__file__).with_name('py.typed').is_file()
-assert len(ray360.__all__) == 14
+assert 'to_cubemap_cross' in ray360.__all__
 for name in ('ai', 'cameras', 'cli', 'datasets', 'frame', 'media', 'torch', 'visualize'):
     assert importlib.util.find_spec('ray360.' + name) is None, name
 panorama = Panorama(np.zeros((90, 180, 3), np.uint8))
 faces = ray360.to_cubemap(panorama, 32)
 np.testing.assert_array_equal(ray360.from_cubemap(faces, panorama.projection), panorama.image)
+cross = ray360.to_cubemap_cross(panorama, 32)
+assert cross.shape == (96, 128, 3) and cross.dtype == np.uint8
+np.testing.assert_array_equal(cross[32:64, 32:64], faces['front'])
 view = panorama.view(Perspective(100, 50, yaw=180)).letterbox(100, 100)
 region = view.map_boxes([Box2D(25, 30, 75, 70, label='object')])[0]
 assert len(region.polygons(panorama.projection)) == 2
@@ -49,6 +52,8 @@ if sys.argv[1] == 'image':
     from ray360.image import read_panorama, write_image
     write_image('capture.v1.png', panorama.image)
     np.testing.assert_array_equal(read_panorama('capture.v1.png').image, panorama.image)
+    write_image('cubemap-cross.png', cross)
+    np.testing.assert_array_equal(read_panorama('cubemap-cross.png').image, cross)
 else:
     from ray360.image import read_panorama
     try:

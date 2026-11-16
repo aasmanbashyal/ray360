@@ -17,6 +17,7 @@
 | `coverage_views` | A conservative full-sphere perspective layout |
 | `cube_projections` | Six named 90-degree perspective projections |
 | `to_cubemap` | A `Panorama` to six named NumPy arrays |
+| `to_cubemap_cross` | A `Panorama` to one image with all six faces in a cross |
 | `from_cubemap` | Six matching arrays to an equirectangular array |
 
 Methods documented here and in the README form the first-release contract.
@@ -123,6 +124,20 @@ on the world-aligned cube. To retain transforms and source metadata, call
 | left | -X | +Z | +Y |
 | up | +Y | +X | -Z |
 | down | -Y | +X | +Z |
+
+`to_cubemap_cross(panorama, size=512, interpolation="bilinear", cache=...)` renders
+the same square faces in one array with `3 * size` rows and `4 * size` columns.
+Each face keeps its orientation and touches its neighbor at the folded edge.
+
+```text
+             up
+    left    front    right    back
+            down
+```
+
+The output preserves the source dtype and channel dimensions. Empty tiles are
+zero-filled. It reuses the same projection maps as `to_cubemap()` and renders
+directly into the face tiles, with no full-size face images to assemble.
 
 `from_cubemap(faces, target, interpolation="bilinear", chunk_rows=128)` returns an
 array with `target.height` rows and `target.width` columns. The target must be

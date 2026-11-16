@@ -14,7 +14,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
-from ray360 import Box2D, Panorama, Perspective, to_cubemap
+from ray360 import Box2D, Panorama, Perspective, to_cubemap_cross
 from ray360.image import overlay
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -113,17 +113,32 @@ def seam_figure(panorama, output):
 
 
 def cube_figure(panorama, output):
+    size = 288
+    x, y = 24, 106
     image = canvas(
-        982,
-        "Six cube faces from the same panorama",
-        "Each face is square with a 90-degree field of view. Arrangement is a display grid.",
+        y + 3 * size + 48,
+        "A panorama unfolded into a cube cross",
+        "Each square is a 90-degree view of the same panorama.",
     )
-    faces = to_cubemap(panorama, size=368)
-    for index, name in enumerate(("front", "right", "back", "left", "up", "down")):
-        x = 24 + (index % 3) * 392
-        y = 106 + (index // 3) * 418
-        text(image, (x, y), name.upper(), 20, COLORS[0])
-        image.paste(photo(faces[name]), (x, y + 28))
+    image.paste(photo(to_cubemap_cross(panorama, size=size)), (x, y))
+    draw = ImageDraw.Draw(image)
+    label_font = font(22)
+    for name, row, col in (
+        ("Top", 0, 1),
+        ("Left", 1, 0),
+        ("Front", 1, 1),
+        ("Right", 1, 2),
+        ("Back", 1, 3),
+        ("Bottom", 2, 1),
+    ):
+        draw.text(
+            (x + col * size + 12, y + row * size + 8),
+            name,
+            font=label_font,
+            fill=FOREGROUND,
+            stroke_width=2,
+            stroke_fill=BACKGROUND,
+        )
     save(image, output, "cubemap-faces.webp")
 
 

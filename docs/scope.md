@@ -5,8 +5,8 @@ images. A video is a sequence of application-decoded panorama arrays.
 
 The supported workflow is view extraction, explicit preprocessing, point/box
 mapping, seam-aware rendering, and conversion between equirectangular images and
-six named cube faces. NumPy remains the core backend. Pillow adds loading, saving,
-and outline overlays. The package exports fourteen root symbols.
+six named cube faces. The same faces can be rendered as a single cross image.
+NumPy remains the core backend. Pillow adds loading, saving, and outline overlays.
 
 The earlier development implementation included camera adapters, external process
 bridges, PyAV sources/writers, live buffers, Torch sampling, model wrappers, COCO/YOLO
@@ -16,10 +16,8 @@ and filename-generation paths are gone, including their lossy metadata handling
 and dotted-prefix collision. Applications write their own format-specific exports.
 
 Cubemap conversion uses the existing perspective geometry, with explicit face
-orientation and adjacent-face filtering. It adds no backend dependency. It does
-not add a general projection plugin system, packed texture layouts, or camera
-stitching. Model and decoder integrations remain application examples with opt-in
-end-to-end tests, rather than package runtime dependencies.
+orientation and adjacent-face filtering. It adds no backend dependency. Model and
+decoder integrations remain application examples with opt-in end-to-end tests.
 
 ## Experimental merging
 

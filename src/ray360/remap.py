@@ -109,6 +109,18 @@ class ProjectionMap:
         output = np.empty(
             (self.target.height, self.target.width, *image.shape[2:]), dtype=image.dtype
         )
+        self._sample_into(image, output, interpolation=interpolation, chunk_rows=chunk_rows)
+        return output
+
+    def _sample_into(
+        self,
+        image: NDArray,
+        output: NDArray,
+        *,
+        interpolation: Interpolation,
+        chunk_rows: int,
+    ) -> None:
+        """Fill a matching destination, which may be a slice of a larger image."""
         for start in range(0, self.target.height, chunk_rows):
             stop = start + chunk_rows
             output[start:stop] = sample(
@@ -118,7 +130,6 @@ class ProjectionMap:
                 wrap=isinstance(self.source, Equirectangular),
                 interpolation=interpolation,
             )
-        return output
 
 
 class MapCache:

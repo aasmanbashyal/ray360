@@ -23,6 +23,7 @@ def test_public_package_contract():
         "cube_projections",
         "from_cubemap",
         "to_cubemap",
+        "to_cubemap_cross",
     }
     root = Path(__file__).resolve().parents[1]
     config = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))

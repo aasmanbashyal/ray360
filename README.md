@@ -111,14 +111,16 @@ panorama pieces belong to the same spherical region.
 
 ```python
 import numpy as np
-from ray360 import Equirectangular, Panorama, from_cubemap, to_cubemap
+from ray360 import Equirectangular, Panorama, from_cubemap, to_cubemap, to_cubemap_cross
 
 panorama = Panorama(np.zeros((360, 720, 3), dtype=np.uint8))
 faces = to_cubemap(panorama, size=256)
 restored = from_cubemap(faces, Equirectangular(720, 360))
+cross = to_cubemap_cross(panorama, size=256)
 
 print(sorted(faces))  # ['back', 'down', 'front', 'left', 'right', 'up']
 print(restored.shape)  # (360, 720, 3)
+print(cross.shape)     # (768, 1024, 3)
 ```
 
 Faces are square with a 90-degree field of view. Bilinear reconstruction samples
@@ -126,9 +128,11 @@ neighboring faces at their boundaries. For model predictions on a cube face, use
 `panorama.view(cube_projections(size)["front"])` to retain its view transform.
 See [face orientation and conversion](https://github.com/aasmanbashyal/ray360/blob/main/docs/api.md#cubemap-conversion).
 
-![Six cube faces generated from the panorama, labeled front, right, back, left, up, and down](https://raw.githubusercontent.com/aasmanbashyal/ray360/main/docs/assets/cubemap-faces.webp)
+`to_cubemap_cross()` puts all six faces in one image, with top and bottom above
+and below front and left, front, right, and back across the middle. To save it
+with the `image` extra, use `ray360.image.write_image("cubemap.png", cross)`.
 
-The faces are shown in a display grid; `to_cubemap()` returns a dictionary of arrays.
+![Cubemap cross with left, front, right, and back across the middle, and top and bottom on either side of front](https://raw.githubusercontent.com/aasmanbashyal/ray360/main/docs/assets/cubemap-faces.webp)
 
 ### Read an image and draw mapped predictions
 

@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added `to_cubemap_cross()` to render all six oriented faces in one image.
 - Improved installation, examples, and navigation in the README.
 - Added reproducible perspective, seam-mapping, and cubemap figures with source credits.
 - Added contribution and security reporting guidance, issue forms, and a pull request template.
