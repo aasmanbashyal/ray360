@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.2.0 · 2026-11-16
+
 - Added `from_cubemap_cross()` to reconstruct a panorama and map boxes across cube faces and the panorama seam.
 - Added `to_cubemap_cross()` to render all six oriented faces in one image.
 - Improved installation, examples, and navigation in the README.
