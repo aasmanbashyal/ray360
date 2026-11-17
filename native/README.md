@@ -1,8 +1,8 @@
 # Rust sampling for Ray360
 
-Build this optional package from the checkout to accelerate Ray360's regular
-view, preprocessing, and cubemap calls. The Ray360 core from this checkout
-uses Rust automatically when the native package is installed.
+The optional `ray360-native` package accelerates Ray360's regular view,
+preprocessing, and cubemap calls. Ray360 0.3.0 and later use Rust automatically
+when the extension is installed.
 
 The kernel implements nearest and bilinear sampling for C-contiguous `uint8`
 HW/HWC images with contiguous `float32` or `float64` coordinates. It retains
@@ -20,7 +20,20 @@ unsafe AVX2 intrinsics to a runtime-dispatched function with checked gather
 bounds and masked tail lanes. There is no OpenCV code, Rayon pool, global
 `target-cpu=native` build flag, FMA interpolation, or fast-math setting.
 
-## Build and use
+## Install from PyPI
+
+```sh
+pip install 'ray360-native[ray360]'
+```
+
+Prebuilt wheels support CPython 3.11 through 3.14 on Linux x86-64 and ARM64
+with glibc 2.28 or later, macOS Intel and Apple Silicon, and Windows x86-64.
+For direct sampling with NumPy as the only dependency, use `pip install ray360-native`.
+
+If you previously installed `ray360-native-prototype`, uninstall it before
+installing this package. Both distributions use the `ray360_native` import name.
+
+## Build from source
 
 Install a Rust toolchain and the platform's native linker first. Windows uses
 the Visual Studio C++ build tools. Run one of these commands from the repository
@@ -69,9 +82,7 @@ result = panorama.view(Perspective(320, 240)).image
 `ray360_native.sample` is also available for callers with their own coordinate
 maps. Its Rust sampling path only requires NumPy. Install `ray360` for
 `PreparedView` or for sampling inputs outside the Rust kernel's contract.
-Installing `./native[ray360]` selects that dependency automatically. With a
-released Ray360 version that predates automatic dispatch, call the native API
-directly.
+The `ray360` extra installs this dependency automatically.
 
 ## Fused preprocessing and SIMD
 

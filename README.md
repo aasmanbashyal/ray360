@@ -71,9 +71,14 @@ The core depends only on NumPy. Model and decoder dependencies are installed
 separately by the application. See [PyPI](https://pypi.org/project/ray360/) and the
 [release history](https://github.com/aasmanbashyal/ray360/releases).
 
-For faster sampling of contiguous `uint8` images, build the [optional Rust backend](https://github.com/aasmanbashyal/ray360/blob/main/native/README.md)
-from this checkout. Once installed, the same view, preprocessing, and cubemap APIs
-use it for eligible inputs and fall back to NumPy for other dtypes and layouts.
+Install the optional Rust extension for faster sampling of contiguous `uint8` images.
+
+```bash
+pip install "ray360-native[ray360]"
+```
+
+Existing view, preprocessing, and cubemap calls use Rust for eligible inputs and
+fall back to NumPy for other dtypes and layouts. See the [supported platforms and source build instructions](https://github.com/aasmanbashyal/ray360/blob/main/native/README.md).
 
 ## Quick start
 
