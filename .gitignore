@@ -13,3 +13,4 @@ benchmark-results*.json
 .test-results/
 .coverage*
 htmlcov/
+/native/target/
