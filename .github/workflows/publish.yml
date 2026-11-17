@@ -40,7 +40,7 @@ jobs:
       - run: uv run --no-sync python -m pytest
       - run: uv build --no-sources
       - run: uv tool run --from twine==7.0.0 twine check --strict dist/*
-      - run: uv run --no-sync python scripts/check_wheel.py
+      - run: uv run --no-sync python scripts/check_wheel.py --sdist
       - run: uv run --no-sync python scripts/check_wheel.py --image
       - uses: actions/upload-artifact@v4
         with:
