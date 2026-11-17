@@ -28,7 +28,7 @@ jobs:
       - run: uv run --no-sync python -m pytest
       - run: uv run --no-sync python examples/basic.py
       - run: uv build --no-sources
-      - run: uv run --no-sync python scripts/check_wheel.py
+      - run: uv run --no-sync python scripts/check_wheel.py --sdist
       - run: uv run --no-sync python scripts/check_wheel.py --image
 
   minimum-dependencies:

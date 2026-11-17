@@ -7,7 +7,7 @@ uv run --no-sync ruff check src tests scripts examples benchmarks
 uv run --no-sync ruff format --check src tests scripts examples benchmarks
 uv run --no-sync mypy
 uv build --no-sources
-uv run --no-sync python scripts/check_wheel.py
+uv run --no-sync python scripts/check_wheel.py --sdist
 uv run --no-sync python scripts/check_wheel.py --image
 ```
 
@@ -15,6 +15,9 @@ The wheel checker creates a fresh environment, installs the built distribution,
 and runs outside the checkout. It verifies imports, the small dependency set,
 removed modules, typing marker, preprocessing, prediction mapping, and persistence.
 It needs package-index access for dependencies unless uv already has cached wheels.
+The checker constrains dependency versions to those in the caller's environment.
+The wheel metadata determines which dependencies to install, including Pillow
+when the checker requests the `image` extra.
 
 The core suite uses analytic coordinate fields and known spherical regions. It
 checks seam interpolation, poles, rotations, full-sphere coverage, inverse

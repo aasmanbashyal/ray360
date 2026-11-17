@@ -7,6 +7,7 @@ import importlib.metadata
 import os
 import subprocess
 import sys
+import tarfile
 import tempfile
 import tomllib
 from pathlib import Path
@@ -71,10 +72,49 @@ print('Installed wheel passed:', ray360.__version__, sorted(installed))
 """
 
 
+def make_venv(environment: Path) -> Path:
+    subprocess.run(["uv", "venv", "--python", sys.executable, str(environment)], check=True)
+    return environment / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+
+
+def install_wheels(python: Path, constraints: Path) -> list[str]:
+    return [
+        "uv",
+        "pip",
+        "install",
+        "--python",
+        str(python),
+        "--only-binary",
+        ":all:",
+        "--constraint",
+        str(constraints),
+    ]
+
+
+def check_sdist(archive: Path, wheel: Path, work: Path) -> None:
+    print(f"{archive.name}: {archive.stat().st_size:,} bytes", flush=True)
+    with tarfile.open(archive, "r:gz") as source:
+        if any("/docs/assets/" in name and name.endswith(".webp") for name in source.getnames()):
+            raise SystemExit("The source archive includes README gallery images.")
+
+    rebuilt_dir = work / "rebuilt"
+    subprocess.run(
+        ["uv", "build", "--wheel", "--no-sources", "--out-dir", str(rebuilt_dir), str(archive)],
+        cwd=work,
+        check=True,
+    )
+    if (rebuilt_dir / wheel.name).read_bytes() != wheel.read_bytes():
+        raise SystemExit("The wheel rebuilt from the source archive differs from the original.")
+    print("Source archive rebuilt a byte-identical core wheel.", flush=True)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--image", action="store_true", help="Also exercise the optional image extra"
+    )
+    parser.add_argument(
+        "--sdist", action="store_true", help="Check the core source archive and rebuild its wheel"
     )
     args = parser.parse_args()
     config = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
@@ -82,20 +122,28 @@ def main() -> None:
     wheel = ROOT / "dist" / f"ray360-{version}-py3-none-any.whl"
     if not wheel.is_file():
         parser.error("Run uv build --no-sources first")
+    archive = ROOT / "dist" / f"ray360-{version}.tar.gz"
+    if args.sdist and not archive.is_file():
+        parser.error("Run uv build --no-sources to create the source archive")
+    print(f"{wheel.name}: {wheel.stat().st_size:,} bytes", flush=True)
     with tempfile.TemporaryDirectory(prefix="ray360-wheel-") as directory:
         work = Path(directory)
-        environment = work / "environment"
-        subprocess.run(["uv", "venv", "--python", sys.executable, str(environment)], check=True)
-        python = environment / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
-        requirements = [str(wheel), "numpy==" + importlib.metadata.version("numpy")]
+        python = make_venv(work / "environment")
+        versions = ["numpy==" + importlib.metadata.version("numpy")]
         if args.image:
-            requirements.append("Pillow==" + importlib.metadata.version("Pillow"))
-        subprocess.run(["uv", "pip", "install", "--python", str(python), *requirements], check=True)
+            versions.append("Pillow==" + importlib.metadata.version("Pillow"))
+        constraints = work / "constraints.txt"
+        constraints.write_text("\n".join(versions) + "\n", encoding="utf-8")
+        project = "ray360[image]" if args.image else "ray360"
+        requirement = f"{project} @ {wheel.resolve().as_uri()}"
+        subprocess.run([*install_wheels(python, constraints), requirement], check=True)
         subprocess.run(
             [str(python), "-I", "-c", SMOKE, "image" if args.image else "core"],
             cwd=work,
             check=True,
         )
+        if args.sdist:
+            check_sdist(archive, wheel, work)
 
 
 if __name__ == "__main__":
