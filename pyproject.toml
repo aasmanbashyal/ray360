@@ -33,6 +33,7 @@ packages = ["src/ray360"]
 
 [tool.hatch.build.targets.sdist]
 include = ["/src", "/tests", "/docs", "/examples", "/benchmarks", "/scripts", "/.github", "/README.md", "/CONTRIBUTING.md", "/SECURITY.md", "/LICENSE", "/pyproject.toml", "/uv.lock"]
+exclude = ["/docs/assets/*.webp"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- The Python source distribution omits the README gallery images, which remain available on GitHub.
+
 ## 0.2.0 · 2026-11-16
 
 - Added `from_cubemap_cross()` to reconstruct a panorama and map boxes across cube faces and the panorama seam.
