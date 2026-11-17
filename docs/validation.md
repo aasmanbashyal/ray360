@@ -49,6 +49,47 @@ ground truth. It does not certify model accuracy or physical camera calibration.
 CI is configured for Linux, Windows, and macOS, a Python version matrix, a NumPy-only
 installed wheel, and the minimum declared NumPy/Pillow versions on Python 3.11.
 
+## Rust wheels
+
+The Rust wheel jobs build with CPython 3.12 on Ubuntu x64, Windows, macOS Apple
+Silicon, and macOS Intel. An Ubuntu job uses CPython 3.11 with NumPy 1.24. Each job
+checks the core and Rust installations separately, then resolves the native
+wheel's `ray360` extra using the locally built core wheel and confirms that a
+core call reaches the Rust kernel. The native suite runs outside
+the checkout and compares nearest and bilinear sampling, prepared views, and
+public view and cubemap workflows with NumPy.
+
+Run the same check after building both wheels on your platform.
+
+```bash
+uv run --no-sync python scripts/check_wheel.py --native path/to/rust-wheel.whl
+```
+
+## Package footprint
+
+These are approximate compressed sizes in KiB. The core baseline is
+the Ray360 0.2.0 release. Each native comparison uses the same CPython 3.12,
+Rust, and Maturin versions for both builds on that platform. The Linux
+comparison used `manylinux_2_35_x86_64` wheels built on Debian 12.
+
+| Artifact | Baseline | With optional Rust dispatch |
+| --- | ---: | ---: |
+| Core source archive | 621 KiB | 120 KiB |
+| Core wheel | 26 KiB | 27 KiB |
+| Linux x86-64 native wheel | 319 KiB | 276 KiB |
+| Windows x86-64 native wheel | 195 KiB | 187 KiB |
+
+The source archive omits the README gallery images. Rebuilding the core wheel
+from that archive produces the same bytes in the tested build environment.
+CI reports artifact sizes and verifies that the source archive omits those
+images and rebuilds the same core wheel.
+The Linux and Windows x86-64 CPython 3.12 native jobs limit their wheel sizes to
+the measured baselines of 326,323 and 199,837 bytes respectively. To check a
+wheel against a baseline, pass `--native-max-bytes` to the wheel checker.
+The core wheel grew by 490 bytes, mainly for the dispatch code and README
+metadata. The Linux shared library shrank after stripping symbols. Shorter
+package metadata accounts for most of the Windows wheel reduction.
+
 ## Real media and model validation
 
 The external dependencies stay in the consuming application's environment. A

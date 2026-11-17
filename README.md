@@ -71,6 +71,10 @@ The core depends only on NumPy. Model and decoder dependencies are installed
 separately by the application. See [PyPI](https://pypi.org/project/ray360/) and the
 [release history](https://github.com/aasmanbashyal/ray360/releases).
 
+For faster sampling of contiguous `uint8` images, build the [optional Rust backend](https://github.com/aasmanbashyal/ray360/blob/main/native/README.md)
+from this checkout. Once installed, the same view, preprocessing, and cubemap APIs
+use it for eligible inputs and fall back to NumPy for other dtypes and layouts.
+
 ## Quick start
 
 This example runs with the NumPy-only installation. Replace the synthetic array
@@ -224,6 +228,8 @@ The normal test suite never downloads media or weights. Integration fixtures are
 opt-in and checksum-verified.
 
 ## Documentation
+
+- [Architecture and dependencies](https://github.com/aasmanbashyal/ray360/blob/main/docs/architecture.md)
 
 - [API reference](https://github.com/aasmanbashyal/ray360/blob/main/docs/api.md): coordinates, shapes, transforms, persistence, and rendering.
 - [Scope](https://github.com/aasmanbashyal/ray360/blob/main/docs/scope.md): supported use cases and criteria for new features.
