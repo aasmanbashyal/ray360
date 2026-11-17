@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added an optional Rust sampler for contiguous `uint8` images in the standard view, preprocessing, and cubemap APIs.
+- The Rust wheel requires only NumPy for direct sampling. Ray360 integration is an optional extra.
 - The Python source distribution omits the README gallery images, which remain available on GitHub.
 
 ## 0.2.0 · 2026-11-16

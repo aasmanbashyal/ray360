@@ -1,11 +1,12 @@
-"""Bounded projection-map caching and chunked NumPy resampling."""
+"""Bounded projection-map caching and chunked image resampling."""
 
 from __future__ import annotations
 
 from collections import OrderedDict
 from dataclasses import dataclass
+from functools import cache
 from threading import RLock
-from typing import Literal
+from typing import Literal, Protocol
 
 import numpy as np
 from numpy.typing import NDArray
@@ -14,6 +15,18 @@ from .geometry import positive_int
 from .projections import Equirectangular, Perspective
 
 Interpolation = Literal["nearest", "bilinear"]
+
+
+class _NativeSampler(Protocol):
+    def __call__(
+        self,
+        image: NDArray,
+        xy: NDArray,
+        *,
+        wrap: bool,
+        interpolation: Interpolation,
+        valid: NDArray | None,
+    ) -> NDArray | None: ...
 
 
 def sample(
@@ -25,6 +38,37 @@ def sample(
     valid: NDArray | None = None,
 ) -> NDArray:
     """Sample at edge-based coordinates, clamping vertically and optionally wrapping x."""
+    return _sample(image, xy, wrap, interpolation, valid, _native_sampler())
+
+
+@cache
+def _native_sampler() -> _NativeSampler | None:
+    try:
+        from ray360_native._sampler import try_sample_v1
+    except ImportError:
+        return None
+    return try_sample_v1
+
+
+def _sample_numpy(
+    image: NDArray,
+    xy: NDArray,
+    *,
+    wrap: bool = False,
+    interpolation: Interpolation = "bilinear",
+    valid: NDArray | None = None,
+) -> NDArray:
+    return _sample(image, xy, wrap, interpolation, valid, None)
+
+
+def _sample(
+    image: NDArray,
+    xy: NDArray,
+    wrap: bool,
+    interpolation: Interpolation,
+    valid: NDArray | None,
+    sampler: _NativeSampler | None,
+) -> NDArray:
     image = validate_image(image)
     if interpolation not in ("nearest", "bilinear"):
         raise ValueError("interpolation must be 'nearest' or 'bilinear'.")
@@ -32,8 +76,13 @@ def sample(
         image.dtype.kind == "b" or (image.dtype.kind in "ui" and image.dtype.itemsize >= 8)
     ):
         raise ValueError("Boolean and 64-bit integer arrays require nearest interpolation.")
-    h, w = image.shape[:2]
     xy = np.asarray(xy)
+    if sampler is not None:
+        result = sampler(image, xy, wrap=wrap, interpolation=interpolation, valid=valid)
+        if result is not None:
+            return result
+
+    h, w = image.shape[:2]
     finite = np.isfinite(xy).all(-1)
     x, y = np.moveaxis(np.where(finite[..., None], xy, 0), -1, 0)
     x = np.remainder(x, w) if wrap else np.clip(x, 0, w)
@@ -63,6 +112,8 @@ def sample(
             limits = np.iinfo(image.dtype)
             result = np.clip(np.rint(result), limits.min, limits.max)
         result = result.astype(image.dtype)
+    # A single coordinate on an HW image can produce a NumPy scalar.
+    result = np.asarray(result)
     mask = finite if valid is None else finite & valid
     result[~mask] = 0
     return result

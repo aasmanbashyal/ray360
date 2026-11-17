@@ -42,3 +42,45 @@ jobs:
       - run: uv sync --locked --group dev --extra image
       - run: uv pip install 'numpy==1.24.0' 'Pillow==10.0.0'
       - run: uv run --no-sync python -m pytest
+
+  native-wheel:
+    name: Rust wheel (${{ matrix.os }}, Python ${{ matrix.python }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: ubuntu-24.04, python: '3.11', executable: .venv/bin/python, numpy: 'numpy==1.24.0'}
+          - {os: ubuntu-24.04, python: '3.12', executable: .venv/bin/python, native_max_bytes: 326323}
+          - {os: windows-latest, python: '3.12', executable: .venv/Scripts/python.exe, native_max_bytes: 199837}
+          - {os: macos-15, python: '3.12', executable: .venv/bin/python}
+          - {os: macos-15-intel, python: '3.12', executable: .venv/bin/python}
+    runs-on: ${{ matrix.os }}
+    env:
+      RUSTUP_TOOLCHAIN: '1.100.0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: '0.10.9'
+          python-version: ${{ matrix.python }}
+      - run: rustup toolchain install "$RUSTUP_TOOLCHAIN" --profile minimal
+        shell: bash
+      - run: uv sync --locked --group dev --python "${{ matrix.python }}"
+      - if: matrix.numpy
+        run: uv pip install "${{ matrix.numpy }}"
+      - run: uv build --no-sources
+      - name: Build the Rust wheel
+        shell: bash
+        run: >-
+          uvx maturin@1.16.0 build --release --locked --manifest-path native/Cargo.toml
+          --interpreter "${{ matrix.executable }}" --out native/target/wheels
+      - name: Install wheels and compare Rust output with NumPy
+        shell: bash
+        env:
+          NATIVE_MAX_BYTES: ${{ matrix.native_max_bytes }}
+        run: |
+          size_args=()
+          if [[ -n "$NATIVE_MAX_BYTES" ]]; then
+            size_args+=(--native-max-bytes "$NATIVE_MAX_BYTES")
+          fi
+          uv run --no-sync python scripts/check_wheel.py --native native/target/wheels/*.whl "${size_args[@]}"
