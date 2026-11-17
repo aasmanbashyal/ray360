@@ -1,0 +1,116 @@
+name: build and publish native wheels
+
+on:
+  push:
+    tags: ['native-v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: native-pypi-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: ${{ matrix.platform.target }} / CPython ${{ matrix.python }}
+    runs-on: ${{ matrix.platform.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.11', '3.12', '3.13', '3.14']
+        platform:
+          - {os: ubuntu-24.04, target: x86_64-unknown-linux-gnu, manylinux: '2_28'}
+          - {os: ubuntu-24.04-arm, target: aarch64-unknown-linux-gnu, manylinux: '2_28'}
+          - {os: macos-15-intel, target: x86_64-apple-darwin}
+          - {os: macos-15, target: aarch64-apple-darwin}
+          - {os: windows-latest, target: x86_64-pc-windows-msvc}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: '0.10.9'
+          python-version: ${{ matrix.python }}
+      - name: Check native release metadata
+        shell: bash
+        run: |
+          uv run --no-project python - <<'PY'
+          import os
+          import tomllib
+          from pathlib import Path
+
+          project = tomllib.loads(Path('native/pyproject.toml').read_text())['project']
+          crate = tomllib.loads(Path('native/Cargo.toml').read_text())['package']
+          if project['name'] != 'ray360-native' or project['name'] != crate['name']:
+              raise SystemExit('Python and Rust package names must match ray360-native')
+          if project['version'] != crate['version']:
+              raise SystemExit('Native package name or version does not match the release metadata')
+          ref = os.environ['GITHUB_REF']
+          if ref.startswith('refs/tags/') and ref != f"refs/tags/native-v{project['version']}":
+              raise SystemExit('Native tag must match the package version')
+          PY
+      - run: uv sync --locked --group dev --python '${{ matrix.python }}'
+      - run: uv build --wheel --no-sources
+      - name: Build manylinux wheel
+        if: runner.os == 'Linux'
+        uses: PyO3/maturin-action@86b9d133d34bc1b40018696f782949dac11bd380 # v1.49.4
+        with:
+          maturin-version: v1.16.0
+          rust-toolchain: '1.100.0'
+          target: ${{ matrix.platform.target }}
+          manylinux: ${{ matrix.platform.manylinux }}
+          args: >-
+            --release --locked --compatibility pypi --manifest-path native/Cargo.toml
+            --interpreter python${{ matrix.python }} --out native/target/wheels
+      - name: Build macOS or Windows wheel
+        if: runner.os != 'Linux'
+        shell: bash
+        env:
+          RUSTUP_TOOLCHAIN: '1.100.0'
+        run: |
+          rustup toolchain install "$RUSTUP_TOOLCHAIN" --profile minimal
+          python_path=$(uv run --no-sync python -c 'import sys; print(sys.executable)')
+          uvx maturin@1.16.0 build --release --locked --compatibility pypi \
+            --manifest-path native/Cargo.toml --interpreter "$python_path" --out native/target/wheels
+      - name: Validate and test the installed wheel
+        shell: bash
+        run: |
+          wheels=(native/target/wheels/*.whl)
+          [[ ${#wheels[@]} -eq 1 && -f "${wheels[0]}" ]]
+          uv tool run --from twine==7.0.0 twine check --strict "${wheels[0]}"
+          uv run --no-sync python scripts/check_wheel.py --native "${wheels[0]}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: native-${{ matrix.platform.target }}-cp${{ matrix.python }}
+          path: native/target/wheels/*.whl
+          if-no-files-found: error
+
+  publish:
+    if: startsWith(github.ref, 'refs/tags/native-v')
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/ray360-native/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: native-*
+          path: wheels
+          merge-multiple: true
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: '0.10.9'
+          enable-cache: false
+      - name: Publish tested wheels
+        shell: bash
+        run: |
+          version=${GITHUB_REF_NAME#native-v}
+          wheels=(wheels/ray360_native-"$version"-*.whl)
+          [[ ${#wheels[@]} -eq 20 ]]
+          uv publish --trusted-publishing always "${wheels[@]}"

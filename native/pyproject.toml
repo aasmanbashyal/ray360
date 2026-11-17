@@ -3,20 +3,36 @@ requires = ["maturin==1.16.0"]
 build-backend = "maturin"
 
 [project]
-name = "ray360-native-prototype"
-version = "0.0.0"
+name = "ray360-native"
+version = "0.3.0"
 description = "Optional Rust image sampler for Ray360"
 requires-python = ">=3.11"
 dependencies = ["numpy>=1.24"]
 license = "MIT"
 license-files = ["LICENSE"]
-readme = {text = "Nearest and bilinear sampling for contiguous uint8 NumPy arrays. Install Ray360 to use PreparedView and the NumPy fallback for other inputs.", content-type = "text/plain"}
+readme = {content-type = "text/markdown", text = """
+# Ray360 native sampler
+
+Optional Rust acceleration for nearest and bilinear sampling of contiguous
+`uint8` images. Ray360 0.3.0 and later use it automatically for eligible inputs.
+Install both packages to use the regular Ray360 API, `PreparedView`, and the NumPy
+fallback for other inputs:
+
+```sh
+pip install 'ray360-native[ray360]'
+```
+
+For direct calls to `ray360_native.sample` on supported arrays, install
+`ray360-native` on its own. NumPy is its only required dependency.
+"""}
 
 [project.optional-dependencies]
-ray360 = ["ray360>=0.1.0"]
+ray360 = ["ray360>=0.3.0"]
 
 [project.urls]
+Repository = "https://github.com/aasmanbashyal/ray360"
 Documentation = "https://github.com/aasmanbashyal/ray360/blob/main/native/README.md"
+Issues = "https://github.com/aasmanbashyal/ray360/issues"
 
 [tool.maturin]
 python-source = "python"

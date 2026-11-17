@@ -108,7 +108,7 @@ import numpy as np
 import ray360_native
 
 installed = {d.metadata['Name'].lower() for d in importlib.metadata.distributions()}
-assert installed == {'numpy', 'ray360-native-prototype'}, installed
+assert installed == {'numpy', 'ray360-native'}, installed
 pixels = np.array([[10, 20]], dtype=np.uint8)
 xy = np.array([[1.0, 0.5]], dtype=np.float32)
 np.testing.assert_array_equal(ray360_native.sample(pixels, xy), [15])
@@ -175,7 +175,7 @@ def check_native(work: Path, core_wheel: Path, native_wheel: Path, constraints: 
             "--no-index",
             "--find-links",
             str(core_wheel.parent),
-            f"ray360-native-prototype[ray360] @ {native_wheel.as_uri()}",
+            f"ray360-native[ray360] @ {native_wheel.as_uri()}",
         ],
         check=True,
     )
