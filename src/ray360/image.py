@@ -5,8 +5,10 @@ from __future__ import annotations
 import errno
 import os
 import shutil
+import sys
 import tempfile
 from collections.abc import Iterable
+from contextlib import suppress
 from pathlib import Path
 from typing import Any
 
@@ -37,8 +39,54 @@ def read_panorama(path: str | Path, *, projection: Equirectangular | None = None
     return Panorama(array, projection, source_id=str(path))
 
 
+if sys.platform == "win32":
+    import msvcrt
+    from typing import BinaryIO
+
+    def _copy_in_place(source: BinaryIO, target: BinaryIO) -> None:
+        target.seek(0)
+        shutil.copyfileobj(source, target)
+        if target.tell() != source.tell():
+            raise OSError(errno.EIO, "Incomplete write", target.name)
+        target.truncate()
+
+    def _overwrite_open_file(staged: Path, path: Path) -> None:
+        # A Windows reader can share write access while blocking a rename.
+        # Unbuffered writes let us seek back even after a disk-full error.
+        with staged.open("rb") as source, path.open("r+b", buffering=0) as target:
+            # Serialize in-place writers. Closing the handle releases the lock.
+            msvcrt.locking(target.fileno(), msvcrt.LK_NBLCK, 1)
+            with staged.with_name("backup").open("w+b") as backup:
+                shutil.copyfileobj(target, backup)
+                backup.seek(0)
+                try:
+                    _copy_in_place(source, target)
+                except BaseException:
+                    _copy_in_place(backup, target)
+                    raise
+
+
+def _copy_exclusive(staged: Path, path: Path) -> None:
+    with staged.open("rb") as source:
+        output = path.open("xb")
+        created = os.fstat(output.fileno())
+        try:
+            with output:
+                shutil.copyfileobj(source, output)
+        except BaseException:
+            # A writer may have replaced our directory entry during the copy.
+            with suppress(FileNotFoundError):
+                if os.path.samestat(created, path.lstat()):
+                    path.unlink()
+            raise
+
+
 def write_image(path: str | Path, image: NDArray, *, overwrite: bool = False) -> None:
-    """Encode before replacing the destination. Existing files require overwrite=True."""
+    """Existing files require overwrite=True. Encode regular files before publishing.
+
+    When a Windows reader blocks replacement but shares write access, update the
+    open file in place. Readers can observe that update before it finishes.
+    """
     encoded = _pillow().fromarray(np.asarray(image))
     path = Path(path)
     extension = path.suffix.lower()
@@ -61,18 +109,22 @@ def write_image(path: str | Path, image: NDArray, *, overwrite: bool = False) ->
         if overwrite:
             if path.is_file():
                 shutil.copymode(path, staged)
-            staged.replace(path)
-        elif os.name == "nt":
+            try:
+                staged.replace(path)
+            except PermissionError as exc:
+                if sys.platform == "win32" and exc.winerror in (5, 32) and path.is_file():
+                    _overwrite_open_file(staged, path)
+                else:
+                    raise
+        elif sys.platform == "win32":
             staged.rename(path)  # Windows rename refuses an existing destination.
         else:
             try:
                 os.link(staged, path)
             except OSError as exc:
-                if exc.errno not in (errno.ENOTSUP, errno.EPERM, errno.ENOSYS):
+                if exc.errno not in (errno.ENOTSUP, errno.EOPNOTSUPP, errno.EPERM, errno.ENOSYS):
                     raise
-                # Filesystems without hard links still support exclusive creation.
-                with path.open("xb") as output, staged.open("rb") as source:
-                    shutil.copyfileobj(source, output)
+                _copy_exclusive(staged, path)
 
 
 def overlay(
