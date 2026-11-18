@@ -13,7 +13,7 @@ from .projections import Equirectangular, Perspective, coverage_views
 from .remap import MapCache, ProjectionMap
 from .transforms import ViewTransform
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
 __all__ = [
     "Box2D",

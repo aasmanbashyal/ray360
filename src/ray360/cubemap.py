@@ -8,6 +8,7 @@ from dataclasses import replace
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
+from . import remap
 from .annotations import Box2D, Polygon2D, SphericalRegion, _mask_to_polygons
 from .geometry import positive_int
 from .panorama import Panorama
@@ -124,13 +125,15 @@ def from_cubemap_cross(
     if not isinstance(target, Equirectangular):
         raise TypeError("from_cubemap_cross requires an Equirectangular target.")
 
-    # Keep face tiles as views, with a shared placement convention for both conversions.
     faces = {
         name: cross[row * size : (row + 1) * size, col * size : (col + 1) * size]
         for name, (row, col) in _CROSS_TILES.items()
     }
     projections = cube_projections(size)
     mapped = [_cross_box_polygons(box, projections, target) for box in boxes]
+    if cross.dtype == np.uint8 and cross.flags.c_contiguous and remap._native_sampler() is not None:
+        # Pack each tile once so all chunks and cross-face taps can reuse it in Rust.
+        faces = {name: np.ascontiguousarray(tile) for name, tile in faces.items()}
     pixels = from_cubemap(faces, target, interpolation=interpolation, chunk_rows=chunk_rows)
     if draw_boxes:
         from .image import overlay

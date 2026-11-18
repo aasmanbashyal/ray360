@@ -157,16 +157,19 @@ multiple faces, Ray360 joins the pixel coverage on the target grid before tracin
 the outline. This keeps shared cube edges inside the region. Pieces on either
 side of the panorama seam stay in the same group. At small output sizes, a
 multi-face box can cover fewer than one output pixel and produce an empty group.
-The optional `draw_boxes=True` uses Pillow to render the polygons and returns an
-RGB image. By default the original channel dimensions and dtype are preserved.
+With `draw_boxes=True`, Pillow draws the polygons on an 8-bit RGB preview.
+For 16-bit RGB or RGBA input, the preview uses the high byte of each color channel.
+With drawing off, the reconstruction retains the original channels and dtype.
 
 Reverse conversion assigns each ray to its dominant cube axis, with ties resolved
 in X, Y, Z order. Bilinear filter taps outside a face sample the neighboring face
 at its nearest pixel. This avoids clamping every tap to the same face edge. It is
 not a mipmap or antialiasing filter; downsampling can lose detail or alias. Coordinate
 working arrays are processed in row chunks. The output image is allocated in full.
+For a contiguous `uint8` cross with the Rust sampler installed, reverse conversion
+copies the six face tiles once so all chunks can sample them in Rust.
 
-Both directions retain HW/HWC shape semantics and dtype. Nearest interpolation
+Unannotated conversions retain HW/HWC shape semantics and dtype. Nearest interpolation
 preserves label IDs, including boolean and 64-bit integer values. Bilinear has the
 same dtype restrictions as view extraction. Conversion does not preserve arbitrary
 application metadata; construct a new `Panorama` with the target projection and

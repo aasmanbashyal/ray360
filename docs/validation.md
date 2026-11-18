@@ -49,6 +49,14 @@ ground truth. It does not certify model accuracy or physical camera calibration.
 CI is configured for Linux, Windows, and macOS, a Python version matrix, a NumPy-only
 installed wheel, and the minimum declared NumPy/Pillow versions on Python 3.11.
 
+### Linux ARM64 under emulation
+
+In a Docker ARM64 run with NumPy 2.5.5, OpenBLAS selected `armv9sme` and returned
+incorrect results when multiplying a 300 by 3 matrix by a 3 by 3 matrix. Ray360 now
+contracts ray components directly on Linux ARM64. For applications also doing
+NumPy matrix multiplication, or for testing Ray360 0.3.0 in this environment,
+setting `OPENBLAS_CORETYPE=ARMV8` before starting Python corrected the same probe.
+
 ## Rust wheels
 
 The Rust wheel jobs build with CPython 3.12 on Ubuntu x64, Windows, macOS Apple

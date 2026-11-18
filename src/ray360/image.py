@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+import errno
+import os
+import shutil
+import tempfile
 from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
@@ -34,15 +38,41 @@ def read_panorama(path: str | Path, *, projection: Equirectangular | None = None
 
 
 def write_image(path: str | Path, image: NDArray, *, overwrite: bool = False) -> None:
-    """Write an array to the exact filename, refusing existing files by default."""
+    """Encode before replacing the destination. Existing files require overwrite=True."""
     encoded = _pillow().fromarray(np.asarray(image))
     path = Path(path)
     extension = path.suffix.lower()
     formats = _pillow().registered_extensions()
     if extension not in formats:
         raise ValueError(f"Unknown image extension {extension!r}.")
-    with path.open("wb" if overwrite else "xb") as stream:
-        encoded.save(stream, format=formats[extension])
+    if not overwrite and os.path.lexists(path):
+        raise FileExistsError(errno.EEXIST, os.strerror(errno.EEXIST), path)
+    if overwrite:
+        path = path.resolve()
+        if path.exists() and not path.is_file():
+            # Pipes and devices must be opened in place, never replaced by a file.
+            with path.open("wb") as stream:
+                encoded.save(stream, format=formats[extension])
+            return
+    with tempfile.TemporaryDirectory(dir=path.parent) as directory:
+        staged = Path(directory, "image")
+        with staged.open("wb") as stream:
+            encoded.save(stream, format=formats[extension])
+        if overwrite:
+            if path.is_file():
+                shutil.copymode(path, staged)
+            staged.replace(path)
+        elif os.name == "nt":
+            staged.rename(path)  # Windows rename refuses an existing destination.
+        else:
+            try:
+                os.link(staged, path)
+            except OSError as exc:
+                if exc.errno not in (errno.ENOTSUP, errno.EPERM, errno.ENOSYS):
+                    raise
+                # Filesystems without hard links still support exclusive creation.
+                with path.open("xb") as output, staged.open("rb") as source:
+                    shutil.copyfileobj(source, output)
 
 
 def overlay(
@@ -60,7 +90,16 @@ def overlay(
     Image = _pillow()
     from PIL import ImageDraw
 
-    base = Image.fromarray(np.asarray(image)).convert("RGB")
+    pixels = np.asarray(image)
+    if (
+        pixels.ndim == 3
+        and pixels.shape[-1] in (3, 4)
+        and pixels.dtype.kind == "u"
+        and pixels.dtype.itemsize == 2
+    ):
+        # Pillow's RGB display mode uses eight bits per channel.
+        pixels = (pixels >> 8).astype(np.uint8)
+    base = Image.fromarray(pixels).convert("RGB")
     if projection is not None and projection.size != base.size:
         raise ValueError("Overlay projection must match image dimensions.")
     draw = ImageDraw.Draw(base)

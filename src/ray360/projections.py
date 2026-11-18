@@ -11,6 +11,7 @@ from numpy.typing import ArrayLike
 
 from .geometry import (
     FloatArray,
+    _rotate_rays,
     lonlat_to_rays,
     normalize,
     points2d,
@@ -78,10 +79,10 @@ class Equirectangular(_Projection):
         valid = np.isfinite(ll).all(-1) & (np.abs(ll[..., 1]) <= 90 + 1e-8)
         safe = np.nan_to_num(ll)
         safe[..., 1] = np.clip(safe[..., 1], -90, 90)
-        return lonlat_to_rays(safe) @ self.rotation.T, valid
+        return _rotate_rays(lonlat_to_rays(safe), self.rotation.T), valid
 
     def project(self, rays: ArrayLike) -> tuple[FloatArray, np.ndarray]:
-        ll = rays_to_lonlat(np.asarray(rays) @ self.rotation)
+        ll = rays_to_lonlat(_rotate_rays(rays, self.rotation))
         xy = np.stack(
             ((ll[..., 0] / 360 + 0.5) * self.width, (0.5 - ll[..., 1] / 180) * self.height), -1
         )
@@ -116,10 +117,10 @@ class Perspective(_Projection):
             ),
             -1,
         )
-        return normalize(local) @ self.rotation.T, self.contains_pixels(xy)
+        return _rotate_rays(normalize(local), self.rotation.T), self.contains_pixels(xy)
 
     def project(self, rays: ArrayLike) -> tuple[FloatArray, np.ndarray]:
-        local = normalize(rays) @ self.rotation
+        local = _rotate_rays(normalize(rays), self.rotation)
         z = local[..., 2]
         safe_z = np.where(np.abs(z) < 1e-12, 1e-12, z)
         xy = np.stack(

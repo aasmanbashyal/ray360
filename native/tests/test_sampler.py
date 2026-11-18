@@ -6,11 +6,35 @@ from ray360 import (
     Perspective,
     ProjectionMap,
     from_cubemap,
+    from_cubemap_cross,
     remap,
     to_cubemap,
 )
 from ray360.remap import _sample_numpy as reference
 from ray360_native import _native, sample
+
+
+@pytest.mark.parametrize("interpolation", ["nearest", "bilinear"])
+def test_reverse_cross_uses_rust_for_every_face_sample(monkeypatch, interpolation):
+    cross = np.random.default_rng(71).integers(0, 256, (48, 64, 3), np.uint8)
+    target = Equirectangular(95, 47, yaw=17, pitch=-7, roll=4)
+    with monkeypatch.context() as numpy_backend:
+        numpy_backend.setattr(remap, "_native_sampler", lambda: None)
+        expected, _ = from_cubemap_cross(cross, target, interpolation=interpolation, chunk_rows=7)
+
+    provider = remap._native_sampler()
+    calls = []
+
+    def require_native(image, xy, **kwargs):
+        pixels = provider(image, xy, **kwargs)
+        assert pixels is not None
+        calls.append(image)
+        return pixels
+
+    monkeypatch.setattr(remap, "_native_sampler", lambda: require_native)
+    actual, _ = from_cubemap_cross(cross, target, interpolation=interpolation, chunk_rows=7)
+    assert len({id(face) for face in calls}) == 6
+    np.testing.assert_array_equal(actual, expected)
 
 
 @pytest.mark.parametrize("coordinate_dtype", [np.float32, np.float64])

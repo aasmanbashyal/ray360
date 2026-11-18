@@ -3,7 +3,7 @@ import json
 import numpy as np
 import pytest
 
-from ray360 import Equirectangular, Perspective, coverage_views
+from ray360 import Equirectangular, Perspective, coverage_views, geometry
 from ray360.geometry import (
     angular_distance,
     fibonacci_sphere,
@@ -49,6 +49,21 @@ def test_coordinate_conventions_and_visibility():
     assert Equirectangular(360, 180).unproject([[370, 90], [5, -1]])[1].tolist() == [True, False]
     np.testing.assert_allclose(normalize([1e300, 0, 0]), [1, 0, 0])
     assert angular_distance([0, 0, 1], [0, 0, -1]) == pytest.approx(180)
+
+
+def test_arm64_batch_rotation_matches_known_longitudes(monkeypatch):
+    monkeypatch.setattr(geometry, "_LINUX_ARM64", True)
+    longitude = np.linspace(-150, 150, 300).reshape(2, 150)
+    latitude = np.linspace(-75, 75, 300).reshape(longitude.shape)
+    world_rays = lonlat_to_rays(np.stack((longitude, latitude), axis=-1))
+    target = Equirectangular(360, 180, yaw=23)
+    pixels, valid = target.project(world_rays)
+    expected = np.stack((longitude - 23 + 180, 90 - latitude), axis=-1)
+    np.testing.assert_allclose(pixels, expected, atol=1e-12, rtol=0)
+    assert valid.all()
+    np.testing.assert_allclose(target.unproject(expected)[0], world_rays, atol=1e-14, rtol=0)
+    with pytest.raises(ValueError):
+        target.project([[1]])
 
 
 @pytest.mark.parametrize(

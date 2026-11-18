@@ -8,7 +8,7 @@ from typing import Any
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
-from .geometry import normalize, positive_int
+from .geometry import _rotate_rays, normalize, positive_int
 from .projections import (
     Equirectangular,
     Perspective,
@@ -178,7 +178,7 @@ class SphericalRegion:
             ]
         rays = self.boundary(samples_per_edge)
         if isinstance(target, Perspective):
-            local = rays @ target.rotation
+            local = _rotate_rays(rays, target.rotation)
             for normal in (
                 [0, 0, 1],
                 [1, 0, target.width / (2 * target.focal)],
@@ -189,7 +189,7 @@ class SphericalRegion:
                 local = _clip(local, np.asarray(normal))
             if len(local) < 3:
                 return []
-            xy, _ = target.project(normalize(local) @ target.rotation.T)
+            xy, _ = target.project(_rotate_rays(normalize(local), target.rotation.T))
             return self._polygons([_clip_image(xy, target.width, target.height)])
         xy, _ = target.project(np.concatenate((rays, rays[:1])))
         x = np.unwrap(xy[:, 0] / target.width * (2 * np.pi)) / (2 * np.pi) * target.width

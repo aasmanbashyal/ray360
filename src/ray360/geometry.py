@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
+import platform
+import sys
+
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
 FloatArray = NDArray[np.float64]
+_LINUX_ARM64 = sys.platform == "linux" and platform.machine() == "aarch64"
 
 
 def normalize(vectors: ArrayLike) -> FloatArray:
@@ -48,6 +52,17 @@ def rotation_matrix(yaw: float = 0, pitch: float = 0, roll: float = 0) -> FloatA
     rx = np.array([[1, 0, 0], [0, cp, sp], [0, -sp, cp]])
     rz = np.array([[cr, sr, 0], [-sr, cr, 0], [0, 0, 1]])
     return ry @ rx @ rz
+
+
+def _rotate_rays(rays: ArrayLike, rotation: FloatArray) -> FloatArray:
+    values = np.asarray(rays)
+    if not _LINUX_ARM64:
+        return values @ rotation
+    # OpenBLAS armv9sme can corrupt tall matrix products under ARM64 emulation.
+    # Contract the three components directly, without changing global BLAS settings.
+    if values.ndim == 0 or values.shape[-1] != 3:
+        raise ValueError("Expected vectors with shape (..., 3).")
+    return np.einsum("...i,ij->...j", values, rotation)
 
 
 def angular_distance(a: ArrayLike, b: ArrayLike) -> FloatArray:

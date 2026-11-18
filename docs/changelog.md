@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.1 · 2026-11-18
+
+- A failed image encode now preserves the previous file and leaves a new filename unused.
+- Cubemap outlines on 16-bit RGB and RGBA images now render as 8-bit RGB previews.
+- Reverse conversion of a contiguous `uint8` cubemap cross now uses the optional Rust sampler.
+- Fixed incorrect batch ray rotations observed under Linux ARM64 emulation with OpenBLAS.
+
 ## 0.3.0 · 2026-11-17
 
 - Added an optional Rust sampler for contiguous `uint8` images in the standard view, preprocessing, and cubemap APIs.

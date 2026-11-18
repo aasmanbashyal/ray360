@@ -27,6 +27,53 @@ def test_file_roundtrip_exact_names_and_overwrite_protection(tmp_path):
         write_image(tmp_path / "bad.not_a_format", image)
 
 
+@pytest.mark.parametrize("overwrite", [False, True])
+def test_failed_jpeg_save_leaves_directory_untouched(tmp_path, overwrite):
+    path = tmp_path / "capture.jpg"
+    rgba = np.full((8, 16, 4), 120, np.uint8)
+    if overwrite:
+        write_image(path, rgba[:, :, :3])
+        original = path.read_bytes()
+    with pytest.raises(OSError, match="RGBA"):
+        write_image(path, rgba, overwrite=overwrite)
+    if overwrite:
+        assert path.read_bytes() == original
+        assert list(tmp_path.iterdir()) == [path]
+    else:
+        assert list(tmp_path.iterdir()) == []
+
+
+def test_default_save_preserves_file_created_during_encoding(tmp_path, monkeypatch):
+    from PIL import Image
+
+    path = tmp_path / "shared.png"
+    save = Image.Image.save
+
+    def competing_save(image, *args, **kwargs):
+        path.write_bytes(b"another writer")
+        return save(image, *args, **kwargs)
+
+    monkeypatch.setattr(Image.Image, "save", competing_save)
+    with pytest.raises(FileExistsError):
+        write_image(path, np.zeros((2, 3), np.uint8))
+    assert path.read_bytes() == b"another writer"
+    assert list(tmp_path.iterdir()) == [path]
+
+
+@pytest.mark.parametrize("dtype", ["<u2", ">u2"])
+def test_reverse_cross_draws_uint16_rgb_as_an_eight_bit_preview(dtype):
+    cross = np.full((48, 64, 3), [0x1745, 0x8A76, 0xFE34], dtype=dtype)
+    boxes = [(19, 20, 27, 29)]
+    original, (plain_group,) = from_cubemap_cross(cross, boxes=boxes)
+    assert original.dtype == cross.dtype
+    drawn, (drawn_group,) = from_cubemap_cross(cross, boxes=boxes, draw_boxes=True)
+    assert drawn.dtype == np.uint8
+    np.testing.assert_array_equal(drawn_group[0].vertices, plain_group[0].vertices)
+    np.testing.assert_array_equal(drawn, overlay((original >> 8).astype(np.uint8), plain_group))
+    assert (drawn == [255, 60, 40]).all(-1).any()
+    assert (drawn == [0x17, 0x8A, 0xFE]).all(-1).any()
+
+
 def test_outlines_do_not_mutate_input_or_connect_across_seam():
     image = np.zeros((90, 180, 3), np.uint8)
     region = SphericalRegion(Box2D(20, 20, 80, 80), Perspective(100, 100, yaw=180))
