@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.2 · 2026-11-18
+
+- On Windows, `write_image(..., overwrite=True)` can again update a file held open by a reader that shares write access. The update happens in place when the reader blocks replacement.
+- On POSIX filesystems without hard links, a failed exclusive copy now removes its partial output so the caller can retry.
+
 ## 0.3.1 · 2026-11-18
 
 - A failed image encode now preserves the previous file and leaves a new filename unused.

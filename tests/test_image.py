@@ -1,4 +1,10 @@
+import errno
 import importlib.util
+import io
+import os
+import shutil
+import stat
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -56,6 +62,169 @@ def test_default_save_preserves_file_created_during_encoding(tmp_path, monkeypat
     monkeypatch.setattr(Image.Image, "save", competing_save)
     with pytest.raises(FileExistsError):
         write_image(path, np.zeros((2, 3), np.uint8))
+    assert path.read_bytes() == b"another writer"
+    assert list(tmp_path.iterdir()) == [path]
+
+
+def test_overwrite_with_open_reader_grows_and_truncates(tmp_path):
+    path = tmp_path / "held.png"
+    expected = tmp_path / "expected.png"
+    small = np.zeros((2, 4, 3), np.uint8)
+    large = np.random.default_rng(42).integers(256, size=(96, 192, 3), dtype=np.uint8)
+    write_image(path, small)
+    with path.open("rb"):
+        for pixels in (large, small):
+            write_image(expected, pixels, overwrite=True)
+            write_image(path, pixels, overwrite=True)
+            assert path.read_bytes() == expected.read_bytes()
+    assert set(tmp_path.iterdir()) == {path, expected}
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows open-file overwrite")
+def test_failed_open_file_overwrite_restores_original_and_can_retry(tmp_path, monkeypatch):
+    path = tmp_path / "held.png"
+    image = np.zeros((8, 16, 3), np.uint8)
+    new_image = np.random.default_rng(7).integers(256, size=(32, 64, 3), dtype=np.uint8)
+    write_image(path, image)
+    original = path.read_bytes()
+    copy = shutil.copyfileobj
+    failed = False
+
+    def fail_once(source, output):
+        nonlocal failed
+        if output.name == str(path) and not failed:
+            failed = True
+            # Grow the file as well as overwriting its original PNG header.
+            output.write(source.read(len(original) + 37))
+            raise OSError(errno.ENOSPC, "injected disk full")
+        copy(source, output)
+
+    with path.open("rb"):
+        monkeypatch.setattr(shutil, "copyfileobj", fail_once)
+        with pytest.raises(OSError) as error:
+            write_image(path, new_image, overwrite=True)
+        assert error.value.errno == errno.ENOSPC
+        assert path.read_bytes() == original
+        write_image(path, new_image, overwrite=True)
+        np.testing.assert_array_equal(read_panorama(path).image, new_image)
+    assert list(tmp_path.iterdir()) == [path]
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows read-only attribute")
+def test_read_only_overwrite_preserves_file(tmp_path):
+    path = tmp_path / "protected.png"
+    path.write_bytes(b"original")
+    path.chmod(stat.S_IREAD)
+    try:
+        with pytest.raises(PermissionError):
+            write_image(path, np.zeros((2, 3), np.uint8), overwrite=True)
+        assert path.read_bytes() == b"original"
+        assert list(tmp_path.iterdir()) == [path]
+    finally:
+        path.chmod(stat.S_IWRITE)
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows byte-range lock")
+def test_locked_writer_preserves_original_until_unlock(tmp_path):
+    import msvcrt
+
+    path = tmp_path / "locked.png"
+    image = np.zeros((8, 16, 3), np.uint8)
+    path.write_bytes(b"original")
+    with path.open("r+b", buffering=0) as holder:
+        msvcrt.locking(holder.fileno(), msvcrt.LK_NBLCK, 1)
+        with pytest.raises(PermissionError):
+            write_image(path, image, overwrite=True)
+        assert holder.read() == b"original"
+        holder.seek(0)
+        msvcrt.locking(holder.fileno(), msvcrt.LK_UNLCK, 1)
+        write_image(path, image, overwrite=True)
+    np.testing.assert_array_equal(read_panorama(path).image, image)
+
+
+@pytest.fixture
+def no_hard_links(monkeypatch):
+    if os.name == "nt":
+        pytest.skip("POSIX exclusive-create fallback")
+
+    def unsupported(*args):
+        raise OSError(errno.ENOTSUP, "hard links unavailable")
+
+    monkeypatch.setattr(os, "link", unsupported)
+
+
+def test_no_hard_links_disk_full_allows_retry(no_hard_links, tmp_path, monkeypatch):
+    path = tmp_path / "retry.png"
+    image = np.zeros((8, 16, 3), np.uint8)
+
+    def disk_full(source, output):
+        output.write(source.read(37))
+        raise OSError(errno.ENOSPC, "injected disk full")
+
+    with monkeypatch.context() as patch:
+        patch.setattr(shutil, "copyfileobj", disk_full)
+        with pytest.raises(OSError) as error:
+            write_image(path, image)
+        assert error.value.errno == errno.ENOSPC
+    assert list(tmp_path.iterdir()) == []
+    write_image(path, image)
+    np.testing.assert_array_equal(read_panorama(path).image, image)
+
+
+def test_no_hard_links_delayed_close_error_removes_output(no_hard_links, tmp_path, monkeypatch):
+    path = tmp_path / "late.png"
+    normal_open = Path.open
+
+    class FailedClose(io.FileIO):
+        def close(self):
+            super().close()
+            raise OSError(errno.ENOSPC, "injected close error")
+
+    def open_file(self, mode, *args, **kwargs):
+        if self == path and mode == "xb":
+            return FailedClose(self, mode)
+        return normal_open(self, mode, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "open", open_file)
+    with pytest.raises(OSError) as error:
+        write_image(path, np.zeros((8, 16, 3), np.uint8))
+    assert error.value.errno == errno.ENOSPC
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_no_hard_links_cleanup_preserves_concurrent_replacement(
+    no_hard_links, tmp_path, monkeypatch
+):
+    path = tmp_path / "shared.png"
+
+    def replace_during_copy(source, output):
+        output.write(source.read(37))
+        other = tmp_path / "other"
+        other.write_bytes(b"another writer")
+        other.replace(path)
+        raise OSError(errno.ENOSPC, "injected disk full")
+
+    monkeypatch.setattr(shutil, "copyfileobj", replace_during_copy)
+    with pytest.raises(OSError) as error:
+        write_image(path, np.zeros((8, 16, 3), np.uint8))
+    assert error.value.errno == errno.ENOSPC
+    assert path.read_bytes() == b"another writer"
+    assert list(tmp_path.iterdir()) == [path]
+
+
+@pytest.mark.skipif(os.name == "nt", reason="POSIX link errors")
+@pytest.mark.parametrize("link_error", [errno.EPERM, errno.ENOSYS, errno.EIO])
+def test_link_failure_preserves_competing_file(tmp_path, monkeypatch, link_error):
+    path = tmp_path / "shared.png"
+
+    def competing_create(*args):
+        path.write_bytes(b"another writer")
+        raise OSError(link_error, "injected link error")
+
+    monkeypatch.setattr(os, "link", competing_create)
+    with pytest.raises(OSError) as error:
+        write_image(path, np.zeros((2, 3), np.uint8))
+    assert error.value.errno == (errno.EIO if link_error == errno.EIO else errno.EEXIST)
     assert path.read_bytes() == b"another writer"
     assert list(tmp_path.iterdir()) == [path]
 
